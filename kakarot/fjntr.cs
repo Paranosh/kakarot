@@ -747,10 +747,10 @@ namespace kakarot
 
 
 
-            // client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
+             client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
 
 
-            var eventHandler = new AsyncCompletedEventHandler(DownloadFileCompletedArchivos(Filename, runInOpenMSX));
+            //var eventHandler = new AsyncCompletedEventHandler(DownloadFileCompletedArchivos(Filename, runInOpenMSX));
             // eventHandler.Invoke(null, new AsyncCompletedEventArgs(null, false, new Exception("404: Not Found")));
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => DownloadProgressCallbackArchivos(Filename, sender, e));
             await client.DownloadFileTaskAsync(Uri, Filename);
