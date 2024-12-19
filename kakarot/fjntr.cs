@@ -316,15 +316,15 @@ namespace kakarot
                 PathOpenMSX = config.AppSettings.Settings["OpenMSXPath"].Value;
             }
 
-                
+
             if (!Directory.Exists(Application.StartupPath + "\\tmp\\")) Directory.CreateDirectory(Application.StartupPath + "\\tmp\\");
             ClearDirectory(Application.StartupPath + "\\tmp\\");
             toolStripComboBox3.SelectedIndex = 0;
             if (PathOpenMSX is not null)
             {
-               /* config.AppSettings.Settings["OpenMSXPath"].Value = PathOpenMSX;
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");*/
+                /* config.AppSettings.Settings["OpenMSXPath"].Value = PathOpenMSX;
+                 config.Save(ConfigurationSaveMode.Modified);
+                 ConfigurationManager.RefreshSection("appSettings");*/
                 ToolStripMenuItem OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false);
                 //AddSubMenuItemToolStrip(OpenMSX, "TIPO DE MAPPER", true, clickedItem =>
                 //{
@@ -748,7 +748,7 @@ namespace kakarot
 
 
 
-             client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
+            client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
 
 
             //var eventHandler = new AsyncCompletedEventHandler(DownloadFileCompletedArchivos(Filename, runInOpenMSX));
@@ -1125,7 +1125,7 @@ namespace kakarot
                     //iniciacilzamos config...
                     var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                     //config.AppSettings.Settings.Add("NewSetting", "SomeValue");
-                 
+
                     config.AppSettings.Settings["OpenMSXPath"].Value = folderDialog.SelectedPath;
                     config.Save(ConfigurationSaveMode.Modified);
                     ConfigurationManager.RefreshSection("appSettings");
@@ -1135,9 +1135,15 @@ namespace kakarot
                 }
                 else
                 {
-                    MessageBox.Show("Cancelado por el usuario","Info",MessageBoxButtons.OK, MessageBoxIcon.Information);  
+                    MessageBox.Show("Cancelado por el usuario", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            DragOCMfrm ddragocm = new DragOCMfrm();
+            ddragocm.ShowDialog();
         }
     }
 }
