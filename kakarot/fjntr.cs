@@ -8,11 +8,6 @@ using System.IO.Ports;
 using System.IO.Compression;
 using System.Text;
 using System.Reflection;
-using System.Collections;
-using System.Globalization;
-using System.Resources;
-using System;
-using System.Diagnostics.Eventing.Reader;
 
 
 namespace kakarot
@@ -305,17 +300,30 @@ namespace kakarot
         {
 
             //iniciacilzamos config...
-            //var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             //config.AppSettings.Settings.Add("NewSetting", "SomeValue");
             //config.Save(ConfigurationSaveMode.Modified);
             //ConfigurationManager.RefreshSection("appSettings");
             //config.AppSettings.Settings["DescomprimirDespuesdeDescargar"].Value = "true";
-            PathOpenMSX = isOpenMSXInstalled("openmsx");
+
+            if (config.AppSettings.Settings["OpenMSXPath"].Value == "")
+            {
+                PathOpenMSX = isOpenMSXInstalled("openmsx");
+            }
+            else
+            {
+                PathOpenMSX = config.AppSettings.Settings["OpenMSXPath"].Value;
+            }
+
+                
             if (!Directory.Exists(Application.StartupPath + "\\tmp\\")) Directory.CreateDirectory(Application.StartupPath + "\\tmp\\");
             ClearDirectory(Application.StartupPath + "\\tmp\\");
             toolStripComboBox3.SelectedIndex = 0;
             if (PathOpenMSX is not null)
             {
+               /* config.AppSettings.Settings["OpenMSXPath"].Value = PathOpenMSX;
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");*/
                 ToolStripMenuItem OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false);
                 //AddSubMenuItemToolStrip(OpenMSX, "TIPO DE MAPPER", true, clickedItem =>
                 //{
@@ -692,8 +700,8 @@ namespace kakarot
                 {
                     using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
                     {
-                        folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
-                        folderDialog.ShowNewFolderButton = true;
+                        //folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
+                        //folderDialog.ShowNewFolderButton = true;
 
                         // Mostrar el cuadro de diálogo
                         if (folderDialog.ShowDialog() == DialogResult.OK)
@@ -739,11 +747,11 @@ namespace kakarot
 
 
 
-           // client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
+            // client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
 
 
             var eventHandler = new AsyncCompletedEventHandler(DownloadFileCompletedArchivos(Filename, runInOpenMSX));
-           // eventHandler.Invoke(null, new AsyncCompletedEventArgs(null, false, new Exception("404: Not Found")));
+            // eventHandler.Invoke(null, new AsyncCompletedEventArgs(null, false, new Exception("404: Not Found")));
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => DownloadProgressCallbackArchivos(Filename, sender, e));
             await client.DownloadFileTaskAsync(Uri, Filename);
 
@@ -818,92 +826,63 @@ namespace kakarot
         public AsyncCompletedEventHandler DownloadFileCompletedArchivos(string filename, bool runInOpenMSX)
         {
 
-                Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
+            Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
+            {
+
+                var _filename = filename;
+                if (e.Error != null)
                 {
 
-                    var _filename = filename;
-                    if (e.Error != null)
+                    throw e.Error;
+                }
+                else
+                {
+                    if (runInOpenMSX)
                     {
-
-                        throw e.Error;
-                    }
-                    else
-                    {
-                            if (runInOpenMSX)
+                        if (filename.ToLower().EndsWith(".zip"))
+                        {
+                            string nombre = System.IO.Path.GetFileName(filename);
+                            string path = System.IO.Path.GetDirectoryName(filename);
+                            ZipFile.ExtractToDirectory(filename, Application.StartupPath + "\\tmp\\", true);
+                            File.Delete(filename);
+                            var files = FindFilesRecursively(Application.StartupPath + "\\tmp\\", new[] { ".rom", ".dsk", ".cas" });
+                            foreach (var file in files)
                             {
-                                if (filename.ToLower().EndsWith(".zip"))
+                                int a = 0;
+                                foreach (var filee in files)
                                 {
-                                    string nombre = System.IO.Path.GetFileName(filename);
-                                    string path = System.IO.Path.GetDirectoryName(filename);
-                                    ZipFile.ExtractToDirectory(filename, Application.StartupPath + "\\tmp\\", true);
-                                    File.Delete(filename);
-                                    var files = FindFilesRecursively(Application.StartupPath + "\\tmp\\", new[] { ".rom", ".dsk", ".cas" });
-                                    foreach (var file in files)
-                                    {
-                                        int a = 0;
-                                        foreach (var filee in files)
-                                        {
-                                            a++;
-                                        }
-                                        if (a > 1)
-                                        {
-                                            if (AskToExecuteFile(file))
-                                            {
-                                                string arguments2 = "";
-                                                if (TipoDeMApper == "Mapper Auto")
-                                                    if (TipoDeMApper == "Konami 5") arguments2 = " -romtype konami5";
-                                                if (TipoDeMApper == "Konami 4") arguments2 = " -romtype konami4";
-                                                if (TipoDeMApper == "ASCII 16") arguments2 = " -romtype ASCII16";
-                                                if (TipoDeMApper == "ASCII 8") arguments2 = " -romtype ASCII8";
-                                                ProcessStartInfo psi = new ProcessStartInfo();
-                                                psi.FileName = PathOpenMSX + "\\openmsx.exe";
-                                                if (file.ToLower().EndsWith(".dsk")) psi.Arguments = " \"" + file + "\"";
-                                                if (file.ToLower().EndsWith(".rom")) psi.Arguments = " -cart \"" + file + "\"" + arguments2;
-                                                if (file.ToLower().EndsWith(".cas")) psi.Arguments = " \"" + file + "\"";
-                                                psi.CreateNoWindow = true;
-                                                psi.WorkingDirectory = PathOpenMSX;
-                                                var p = Process.Start(psi);
-                                                this.WindowState = FormWindowState.Minimized;
-                                                p.WaitForExit();
-                                                //borraremos el contenido de tmp
-                                                ClearDirectory(Application.StartupPath + "\\tmp\\");
-                                                // Restaurar la ventana al hacer doble clic en el ícono
-                                                this.Show();
-                                                this.WindowState = FormWindowState.Normal;
-                                                notifyIcon.Visible = false;
-                                                break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            string arguments2 = "";
-                                            if (TipoDeMApper == "Auto")
-                                                if (TipoDeMApper == "Konami 5") arguments2 = " -romtype konami5";
-                                            if (TipoDeMApper == "Konami 4") arguments2 = " -romtype konami4";
-                                            if (TipoDeMApper == "ASCII 16") arguments2 = " -romtype ASCII16";
-                                            if (TipoDeMApper == "ASCII 8") arguments2 = " -romtype ASCII8";
-                                            ProcessStartInfo psi = new ProcessStartInfo();
-                                            psi.FileName = PathOpenMSX + "\\openmsx.exe";
-                                            if (file.ToLower().EndsWith(".dsk")) psi.Arguments = " \"" + file + "\"";
-                                            if (file.ToLower().EndsWith(".rom")) psi.Arguments = " -cart \"" + file + "\"" + arguments2;
-                                            if (file.ToLower().EndsWith(".cas")) psi.Arguments = " \"" + file + "\"";
-                                            psi.CreateNoWindow = true;
-                                            psi.WorkingDirectory = PathOpenMSX;
-                                            var p = Process.Start(psi);
-                                            this.WindowState = FormWindowState.Minimized;
-                                            p.WaitForExit();
-                                            //borraremos el contenido de tmp
-                                            ClearDirectory(Application.StartupPath + "\\tmp\\");
-                                            // Restaurar la ventana al hacer doble clic en el ícono
-                                            this.Show();
-                                            this.WindowState = FormWindowState.Normal;
-                                            notifyIcon.Visible = false;
-                                            break;
-                                        }
-                                    }
-
+                                    a++;
                                 }
-                                if (filename.ToLower().EndsWith(".rom") || filename.ToLower().EndsWith(".cas") || filename.ToLower().EndsWith(".dsk"))
+                                if (a > 1)
+                                {
+                                    if (AskToExecuteFile(file))
+                                    {
+                                        string arguments2 = "";
+                                        if (TipoDeMApper == "Mapper Auto")
+                                            if (TipoDeMApper == "Konami 5") arguments2 = " -romtype konami5";
+                                        if (TipoDeMApper == "Konami 4") arguments2 = " -romtype konami4";
+                                        if (TipoDeMApper == "ASCII 16") arguments2 = " -romtype ASCII16";
+                                        if (TipoDeMApper == "ASCII 8") arguments2 = " -romtype ASCII8";
+                                        ProcessStartInfo psi = new ProcessStartInfo();
+                                        psi.FileName = PathOpenMSX + "\\openmsx.exe";
+                                        if (file.ToLower().EndsWith(".dsk")) psi.Arguments = " \"" + file + "\"";
+                                        if (file.ToLower().EndsWith(".rom")) psi.Arguments = " -cart \"" + file + "\"" + arguments2;
+                                        if (file.ToLower().EndsWith(".cas")) psi.Arguments = " \"" + file + "\"";
+                                        psi.CreateNoWindow = true;
+                                        psi.WorkingDirectory = PathOpenMSX;
+                                        var p = Process.Start(psi);
+                                        this.WindowState = FormWindowState.Minimized;
+                                        p.WaitForExit();
+                                        //borraremos el contenido de tmp
+                                        ClearDirectory(Application.StartupPath + "\\tmp\\");
+                                        // Restaurar la ventana al hacer doble clic en el ícono
+                                        this.Show();
+                                        this.WindowState = FormWindowState.Normal;
+                                        notifyIcon.Visible = false;
+                                        break;
+                                    }
+                                }
+                                else
                                 {
                                     string arguments2 = "";
                                     if (TipoDeMApper == "Auto")
@@ -913,9 +892,9 @@ namespace kakarot
                                     if (TipoDeMApper == "ASCII 8") arguments2 = " -romtype ASCII8";
                                     ProcessStartInfo psi = new ProcessStartInfo();
                                     psi.FileName = PathOpenMSX + "\\openmsx.exe";
-                                    if (filename.ToLower().EndsWith(".dsk")) psi.Arguments = " \"" + filename + "\"";
-                                    if (filename.ToLower().EndsWith(".rom")) psi.Arguments = " -cart \"" + filename + "\"" + arguments2;
-                                    if (filename.ToLower().EndsWith(".cas")) psi.Arguments = " \"" + filename + "\"";
+                                    if (file.ToLower().EndsWith(".dsk")) psi.Arguments = " \"" + file + "\"";
+                                    if (file.ToLower().EndsWith(".rom")) psi.Arguments = " -cart \"" + file + "\"" + arguments2;
+                                    if (file.ToLower().EndsWith(".cas")) psi.Arguments = " \"" + file + "\"";
                                     psi.CreateNoWindow = true;
                                     psi.WorkingDirectory = PathOpenMSX;
                                     var p = Process.Start(psi);
@@ -927,33 +906,62 @@ namespace kakarot
                                     this.Show();
                                     this.WindowState = FormWindowState.Normal;
                                     notifyIcon.Visible = false;
+                                    break;
+                                }
+                            }
 
-                                }
-                                //Hay que tratar el resto de archivos?¿?¿
-                            }
-                            else
-                            //comprobar en caso de ser zip si hay que descomprimir
-                            //....todo
-                            if (descomprimirDespuesDeDescargarToolStripMenuItem.Checked)
-                            {
-                                if (filename.ToLower().EndsWith(".zip"))
-                                {
-                                    string nombre = System.IO.Path.GetFileName(filename);
-                                    string path = System.IO.Path.GetDirectoryName(filename);
-                                    ZipFile.ExtractToDirectory(filename, path + "\\" + nombre.Replace(".zip", ""));
-                                    File.Delete(filename);
-                                }
-                            }
-                            archivosdescargados += filename + " ";
-                            toolStripStatusLabel1.Text = archivosdescargados;
-                       
+                        }
+                        if (filename.ToLower().EndsWith(".rom") || filename.ToLower().EndsWith(".cas") || filename.ToLower().EndsWith(".dsk"))
+                        {
+                            string arguments2 = "";
+                            if (TipoDeMApper == "Auto")
+                                if (TipoDeMApper == "Konami 5") arguments2 = " -romtype konami5";
+                            if (TipoDeMApper == "Konami 4") arguments2 = " -romtype konami4";
+                            if (TipoDeMApper == "ASCII 16") arguments2 = " -romtype ASCII16";
+                            if (TipoDeMApper == "ASCII 8") arguments2 = " -romtype ASCII8";
+                            ProcessStartInfo psi = new ProcessStartInfo();
+                            psi.FileName = PathOpenMSX + "\\openmsx.exe";
+                            if (filename.ToLower().EndsWith(".dsk")) psi.Arguments = " \"" + filename + "\"";
+                            if (filename.ToLower().EndsWith(".rom")) psi.Arguments = " -cart \"" + filename + "\"" + arguments2;
+                            if (filename.ToLower().EndsWith(".cas")) psi.Arguments = " \"" + filename + "\"";
+                            psi.CreateNoWindow = true;
+                            psi.WorkingDirectory = PathOpenMSX;
+                            var p = Process.Start(psi);
+                            this.WindowState = FormWindowState.Minimized;
+                            p.WaitForExit();
+                            //borraremos el contenido de tmp
+                            ClearDirectory(Application.StartupPath + "\\tmp\\");
+                            // Restaurar la ventana al hacer doble clic en el ícono
+                            this.Show();
+                            this.WindowState = FormWindowState.Normal;
+                            notifyIcon.Visible = false;
+
+                        }
+                        //Hay que tratar el resto de archivos?¿?¿
                     }
+                    else
+                        //comprobar en caso de ser zip si hay que descomprimir
+                        //....todo
+                        if (descomprimirDespuesDeDescargarToolStripMenuItem.Checked)
+                    {
+                        if (filename.ToLower().EndsWith(".zip"))
+                        {
+                            string nombre = System.IO.Path.GetFileName(filename);
+                            string path = System.IO.Path.GetDirectoryName(filename);
+                            ZipFile.ExtractToDirectory(filename, path + "\\" + nombre.Replace(".zip", ""));
+                            File.Delete(filename);
+                        }
+                    }
+                    archivosdescargados += filename + " ";
+                    toolStripStatusLabel1.Text = archivosdescargados;
+
+                }
 
 
-                };
-           
+            };
+
             return new AsyncCompletedEventHandler(action);
-            
+
             //catch (WebException ex)
             //{
             //    MessageBox.Show("Ocurrio un error al descargar el archivo:\r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1095,12 +1103,40 @@ namespace kakarot
             {
                 if (resourceName.ToLower().Contains("dsk2rom.exe"))
                 {
-                   ExtractEmbeddedResource(resourceName, outputPath);   
+                    ExtractEmbeddedResource(resourceName, outputPath);
                 }
-                   
+
             }
             Dsk2RomFrm d2r = new Dsk2RomFrm();
             d2r.Show();
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            {
+                //folderDialog.Description = "Seleccione la carpeta donde se encuentra OpenMSX";
+                //folderDialog.ShowNewFolderButton = false;
+
+                // Mostrar el cuadro de diálogo
+                if (folderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    //iniciacilzamos config...
+                    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    //config.AppSettings.Settings.Add("NewSetting", "SomeValue");
+                 
+                    config.AppSettings.Settings["OpenMSXPath"].Value = folderDialog.SelectedPath;
+                    config.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection("appSettings");
+                    MessageBox.Show("La aplicacion se reiniciara", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Application.Restart();
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    MessageBox.Show("Cancelado por el usuario","Info",MessageBoxButtons.OK, MessageBoxIcon.Information);  
+                }
+            }
         }
     }
 }

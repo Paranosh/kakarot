@@ -39,6 +39,8 @@
             dataGridView1 = new DataGridView();
             contextMenuStrip1 = new ContextMenuStrip(components);
             herramientasToolStripMenuItem = new ToolStripMenuItem();
+            convertirAToolStripMenuItem = new ToolStripMenuItem();
+            dSKROMToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             reposToolStripMenuItem = new ToolStripMenuItem();
             filehunterToolStripMenuItem = new ToolStripMenuItem();
@@ -59,8 +61,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             statusStrip1 = new StatusStrip();
             notifyIcon = new NotifyIcon(components);
-            convertirAToolStripMenuItem = new ToolStripMenuItem();
-            dSKROMToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem1 = new ToolStripMenuItem();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             contextMenuStrip1.SuspendLayout();
@@ -170,6 +171,20 @@
             herramientasToolStripMenuItem.Size = new Size(180, 22);
             herramientasToolStripMenuItem.Text = "Herramientas";
             // 
+            // convertirAToolStripMenuItem
+            // 
+            convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem });
+            convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
+            convertirAToolStripMenuItem.Size = new Size(138, 22);
+            convertirAToolStripMenuItem.Text = "Convertir a..";
+            // 
+            // dSKROMToolStripMenuItem
+            // 
+            dSKROMToolStripMenuItem.Name = "dSKROMToolStripMenuItem";
+            dSKROMToolStripMenuItem.Size = new Size(141, 22);
+            dSKROMToolStripMenuItem.Text = "DSK -> ROM";
+            dSKROMToolStripMenuItem.Click += dSKROMToolStripMenuItem_Click;
+            // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
@@ -250,7 +265,7 @@
             // 
             // opcionesToolStripMenuItem
             // 
-            opcionesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { descomprimirDespuesDeDescargarToolStripMenuItem });
+            opcionesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { descomprimirDespuesDeDescargarToolStripMenuItem, toolStripMenuItem1 });
             opcionesToolStripMenuItem.Name = "opcionesToolStripMenuItem";
             opcionesToolStripMenuItem.Size = new Size(180, 22);
             opcionesToolStripMenuItem.Text = "Opciones";
@@ -320,19 +335,12 @@
             notifyIcon.Text = "Kakarot";
             notifyIcon.Visible = true;
             // 
-            // convertirAToolStripMenuItem
+            // toolStripMenuItem1
             // 
-            convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem });
-            convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
-            convertirAToolStripMenuItem.Size = new Size(180, 22);
-            convertirAToolStripMenuItem.Text = "Convertir a..";
-            // 
-            // dSKROMToolStripMenuItem
-            // 
-            dSKROMToolStripMenuItem.Name = "dSKROMToolStripMenuItem";
-            dSKROMToolStripMenuItem.Size = new Size(180, 22);
-            dSKROMToolStripMenuItem.Text = "DSK -> ROM";
-            dSKROMToolStripMenuItem.Click += dSKROMToolStripMenuItem_Click;
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(265, 22);
+            toolStripMenuItem1.Text = "Establecer ruta para OpenMSX";
+            toolStripMenuItem1.Click += toolStripMenuItem1_Click;
             // 
             // fjntr
             // 
@@ -391,5 +399,6 @@
         private NotifyIcon notifyIcon;
         private ToolStripMenuItem convertirAToolStripMenuItem;
         private ToolStripMenuItem dSKROMToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItem1;
     }
 }
