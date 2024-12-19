@@ -31,10 +31,10 @@ namespace kakarot
             if (result == DialogResult.OK) // Test result.
             {
 
-                archivosinextension = Path.GetFileNameWithoutExtension(openFileDialog1.FileName);
+                archivosinextension = Path.GetFileNameWithoutExtension(openFileDialog1.FileName).Replace(" ", "_");
                 archivo = openFileDialog1.FileName;
                 groupBox1.Text = openFileDialog1.SafeFileName;
-                // File.Move(archivo, Application.StartupPath+"\\"+ archivo.Replace(" ", "_"));
+                File.Copy(archivo, Application.StartupPath+"\\tmp.DSK",true);
             }
             else
             {
@@ -93,18 +93,18 @@ namespace kakarot
             try
             {
               //  if (archivo.Contains(" "))
-                {
-                    File.Copy(archivo, Application.StartupPath + "\\" + archivosinextension + ".DSK");
-                    File.Move(Application.StartupPath + "\\" + archivosinextension + ".DSK", Application.StartupPath + "\\tmp.DSK");
-                }
+                //{
+                //    File.Copy(archivo, Application.StartupPath + "\\" + archivosinextension + ".DSK");
+                //    File.Move(Application.StartupPath + "\\" + archivosinextension + ".DSK", Application.StartupPath + "\\tmp.DSK");
+                //}
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
-                psi.FileName = Application.StartupPath + "\\Utils\\dsk2rom.exe";
+                psi.FileName = Application.StartupPath + "tmp\\dsk2rom.exe";
                 psi.Arguments = "-" + argumentos + argumentoCompresion + " tmp.DSK " + Application.StartupPath + "\\tmp.ROM";
                 var p = Process.Start(psi);
                 p.WaitForExit();
-
+               
 
             }
             catch (Exception ex) { MessageBox.Show("Ocurrio un error:\r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); button1.Enabled = true; return; }
@@ -118,7 +118,24 @@ namespace kakarot
         {
             CreaRom();
         }
+        static void ClearDirectory(string directoryPath)
+        {
+            // Validar que el directorio exista
+            if (string.IsNullOrEmpty(directoryPath) || !Directory.Exists(directoryPath))
+                throw new ArgumentException("La ruta del directorio no es válida o no existe.", nameof(directoryPath));
 
+            // Borrar todos los archivos del directorio
+            foreach (var file in Directory.GetFiles(directoryPath))
+            {
+                File.Delete(file);
+            }
+
+            // Borrar todos los subdirectorios y su contenido
+            foreach (var directory in Directory.GetDirectories(directoryPath))
+            {
+                Directory.Delete(directory, true); // El segundo argumento `true` borra recursivamente
+            }
+        }
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (!File.Exists(Application.StartupPath + "\\tmp.ROM"))
@@ -137,14 +154,15 @@ namespace kakarot
                     {
                         //  MessageBox.Show(Application.StartupPath + "\\" + archivosinextension + ".ROM\r\n"+ dialog.FileName);
                         File.Copy(Application.StartupPath + "\\tmp.ROM", dialog.FileName);
-                        File.Delete(Application.StartupPath + "\\tmp.ROM");
-                        File.Delete(Application.StartupPath + "\\tmp.DSK");
+                       if(File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
+                        if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
                     }
                     else
                     {
-                        File.Delete(Application.StartupPath + "\\tmp.ROM");
-                        File.Delete(Application.StartupPath + "\\tmp.DSK");
+                        if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
+                        if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
                     }
+                    ClearDirectory(Application.StartupPath + "\\tmp\\");
                     this.Close();
                 }
             }

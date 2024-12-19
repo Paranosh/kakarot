@@ -298,7 +298,8 @@ namespace kakarot
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
+            if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
             //iniciacilzamos config...
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             //config.AppSettings.Settings.Add("NewSetting", "SomeValue");
