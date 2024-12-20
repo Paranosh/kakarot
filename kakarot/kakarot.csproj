@@ -14,6 +14,7 @@
     <None Remove="Resources\1.png" />
     <None Remove="Resources\dsk2rom.exe" />
     <None Remove="Resources\kakarot2.png" />
+    <None Remove="Resources\list.exe" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +23,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\dsk2rom.exe" />
+    <EmbeddedResource Include="Resources\list.exe" />
   </ItemGroup>
 
   <ItemGroup>

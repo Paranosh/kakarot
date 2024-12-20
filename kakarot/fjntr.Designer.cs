@@ -57,13 +57,14 @@
             opcionesToolStripMenuItem = new ToolStripMenuItem();
             descomprimirDespuesDeDescargarToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem1 = new ToolStripMenuItem();
+            permitirMultiplesInstanciasToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             buscarToolStripMenuItem1 = new ToolStripMenuItem();
             dataGridView2 = new DataGridView();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             statusStrip1 = new StatusStrip();
             notifyIcon = new NotifyIcon(components);
-            permitirMultiplesInstanciasToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem3 = new ToolStripMenuItem();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             contextMenuStrip1.SuspendLayout();
@@ -175,22 +176,22 @@
             // 
             // convertirAToolStripMenuItem
             // 
-            convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem });
+            convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem, toolStripMenuItem3 });
             convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
-            convertirAToolStripMenuItem.Size = new Size(138, 22);
+            convertirAToolStripMenuItem.Size = new Size(180, 22);
             convertirAToolStripMenuItem.Text = "Convertir a..";
             // 
             // dSKROMToolStripMenuItem
             // 
             dSKROMToolStripMenuItem.Name = "dSKROMToolStripMenuItem";
-            dSKROMToolStripMenuItem.Size = new Size(141, 22);
+            dSKROMToolStripMenuItem.Size = new Size(180, 22);
             dSKROMToolStripMenuItem.Text = "DSK -> ROM";
             dSKROMToolStripMenuItem.Click += dSKROMToolStripMenuItem_Click;
             // 
             // toolStripMenuItem2
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(138, 22);
+            toolStripMenuItem2.Size = new Size(180, 22);
             toolStripMenuItem2.Text = "Concatenar";
             toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
@@ -294,6 +295,14 @@
             toolStripMenuItem1.Text = "Establecer ruta para OpenMSX";
             toolStripMenuItem1.Click += toolStripMenuItem1_Click;
             // 
+            // permitirMultiplesInstanciasToolStripMenuItem
+            // 
+            permitirMultiplesInstanciasToolStripMenuItem.CheckOnClick = true;
+            permitirMultiplesInstanciasToolStripMenuItem.Name = "permitirMultiplesInstanciasToolStripMenuItem";
+            permitirMultiplesInstanciasToolStripMenuItem.Size = new Size(265, 22);
+            permitirMultiplesInstanciasToolStripMenuItem.Text = "Permitir multiples instancias";
+            permitirMultiplesInstanciasToolStripMenuItem.CheckedChanged += permitirMultiplesInstanciasToolStripMenuItem_CheckedChanged;
+            // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
@@ -351,13 +360,12 @@
             notifyIcon.Text = "Kakarot";
             notifyIcon.Visible = true;
             // 
-            // permitirMultiplesInstanciasToolStripMenuItem
+            // toolStripMenuItem3
             // 
-            permitirMultiplesInstanciasToolStripMenuItem.CheckOnClick = true;
-            permitirMultiplesInstanciasToolStripMenuItem.Name = "permitirMultiplesInstanciasToolStripMenuItem";
-            permitirMultiplesInstanciasToolStripMenuItem.Size = new Size(265, 22);
-            permitirMultiplesInstanciasToolStripMenuItem.Text = "Permitir multiples instancias";
-            permitirMultiplesInstanciasToolStripMenuItem.CheckedChanged += permitirMultiplesInstanciasToolStripMenuItem_CheckedChanged;
+            toolStripMenuItem3.Name = "toolStripMenuItem3";
+            toolStripMenuItem3.Size = new Size(180, 22);
+            toolStripMenuItem3.Text = "BAS -> ASCII";
+            toolStripMenuItem3.Click += toolStripMenuItem3_Click;
             // 
             // fjntr
             // 
@@ -419,5 +427,6 @@
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem toolStripMenuItem2;
         private ToolStripMenuItem permitirMultiplesInstanciasToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItem3;
     }
 }

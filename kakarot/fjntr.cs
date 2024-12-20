@@ -1160,6 +1160,118 @@ namespace kakarot
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string outputPath = Application.StartupPath + "\\tmp\\list.exe";
+                string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+                foreach (string resourceName in resourceNames)
+                {
+                    if (resourceName.ToLower().Contains("list.exe"))
+                    {
+                        ExtractEmbeddedResource(resourceName, outputPath);
+                    }
+
+                }
+
+                OpenFileDialog openFileDialog1 = new OpenFileDialog();
+                string file = "";
+                //openFileDialog1.InitialDirectory = "c:\\";
+                openFileDialog1.Filter = "Archivos basic MSX (*.bas)|*.bas";
+                openFileDialog1.FilterIndex = 0;
+                openFileDialog1.RestoreDirectory = true;
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    var path = openFileDialog1.FileName;
+                    var solonombre = openFileDialog1.SafeFileName.ToLower();
+                    File.Copy(path, Application.StartupPath + "\\tmp\\" + solonombre, true);
+                    
+                    var prevWorking = Environment.CurrentDirectory;
+                    Directory.SetCurrentDirectory(Application.StartupPath + "\\tmp");
+                    using (Process process = new Process())
+                    {
+                        //process.StartInfo.WorkingDirectory = Application.StartupPath + "\\Utils\\";
+                        process.StartInfo.FileName = "list.exe";
+                        process.StartInfo.Arguments = solonombre;
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.RedirectStandardError = true;
+                        process.StartInfo.CreateNoWindow = true;
+
+                        StringBuilder output = new StringBuilder();
+                        StringBuilder error = new StringBuilder();
+
+                        using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
+                        using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
+                        {
+                            process.OutputDataReceived += (ssender, ee) => {
+                                if (ee.Data == null)
+                                {
+                                    outputWaitHandle.Set();
+                                }
+                                else
+                                {
+                                    output.AppendLine(ee.Data);
+                                }
+                            };
+                            process.ErrorDataReceived += (ssender, ee) =>
+                            {
+                                if (ee.Data == null)
+                                {
+                                    errorWaitHandle.Set();
+                                }
+                                else
+                                {
+                                    error.AppendLine(ee.Data);
+                                }
+                            };
+
+                            process.Start();
+
+                            process.BeginOutputReadLine();
+                            process.BeginErrorReadLine();
+
+                            if (process.WaitForExit(5000) && outputWaitHandle.WaitOne(5000) && errorWaitHandle.WaitOne(5000))
+                            {
+                                // Process completed. Check process.ExitCode here.
+                                File.WriteAllText(path.ToLower().Replace(".bas", ".ASCII"), output.ToString());
+                            }
+                            else
+                            {
+                                // Timed out.
+                                MessageBox.Show("Ocurrio un error al procesar el archivo", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Environment.CurrentDirectory = prevWorking;
+                                return;
+                            }
+                        }
+                    }
+                    Environment.CurrentDirectory = prevWorking;
+                    //  File.WriteAllText(path.ToLower().Replace(".bas", ".ASCII"), file);
+                    DialogResult dialogResult = MessageBox.Show("Archivo generado correctamente.\r\n ¿Quieres abrirlo?", "Info", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    if (dialogResult == DialogResult.Yes)
+                    {
+                        ProcessStartInfo processInfo = new ProcessStartInfo
+                        {
+                            FileName = path.ToLower().Replace(".bas", ".ASCII"),
+                            UseShellExecute = true // Necesario para abrir con la aplicación predeterminada
+                        };
+                        Process.Start(processInfo);
+                    }
+                    else if (dialogResult == DialogResult.No)
+                    {
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error");
+            }
+            ClearDirectory(Application.StartupPath + "\\tmp\\");
+        }
     }
 }
 
