@@ -28,7 +28,7 @@ namespace kakarot
         String PathOpenMSX, TipoDeMApper;
         private System.Windows.Forms.Timer fadeTimer;
         private float opacityIncrement;
-        private bool fadeIn;
+        private bool fadeIn, permitirVariasInstancias;
         private DataTable _dataTableDV1;
         private DataTable _dataTableDV2;
         string listado = "", updatelistado = "", archivosdescargados = "Descargado ";
@@ -1144,6 +1144,21 @@ namespace kakarot
         {
             DragOCMfrm ddragocm = new DragOCMfrm();
             ddragocm.ShowDialog();
+        }
+
+        private void permitirMultiplesInstanciasToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            if (permitirMultiplesInstanciasToolStripMenuItem.Checked)
+            {
+                config.AppSettings.Settings["PermitirVariasInstancias"].Value = "true";
+            }
+            else
+            {
+                config.AppSettings.Settings["PermitirVariasInstancias"].Value = "false";
+            }
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
         }
     }
 }

@@ -41,6 +41,7 @@
             herramientasToolStripMenuItem = new ToolStripMenuItem();
             convertirAToolStripMenuItem = new ToolStripMenuItem();
             dSKROMToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem2 = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             reposToolStripMenuItem = new ToolStripMenuItem();
             filehunterToolStripMenuItem = new ToolStripMenuItem();
@@ -62,7 +63,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             statusStrip1 = new StatusStrip();
             notifyIcon = new NotifyIcon(components);
-            toolStripMenuItem2 = new ToolStripMenuItem();
+            permitirMultiplesInstanciasToolStripMenuItem = new ToolStripMenuItem();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             contextMenuStrip1.SuspendLayout();
@@ -176,7 +177,7 @@
             // 
             convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem });
             convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
-            convertirAToolStripMenuItem.Size = new Size(180, 22);
+            convertirAToolStripMenuItem.Size = new Size(138, 22);
             convertirAToolStripMenuItem.Text = "Convertir a..";
             // 
             // dSKROMToolStripMenuItem
@@ -185,6 +186,13 @@
             dSKROMToolStripMenuItem.Size = new Size(141, 22);
             dSKROMToolStripMenuItem.Text = "DSK -> ROM";
             dSKROMToolStripMenuItem.Click += dSKROMToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItem2
+            // 
+            toolStripMenuItem2.Name = "toolStripMenuItem2";
+            toolStripMenuItem2.Size = new Size(138, 22);
+            toolStripMenuItem2.Text = "Concatenar";
+            toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
             // toolStripSeparator3
             // 
@@ -266,7 +274,7 @@
             // 
             // opcionesToolStripMenuItem
             // 
-            opcionesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { descomprimirDespuesDeDescargarToolStripMenuItem, toolStripMenuItem1 });
+            opcionesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { descomprimirDespuesDeDescargarToolStripMenuItem, toolStripMenuItem1, permitirMultiplesInstanciasToolStripMenuItem });
             opcionesToolStripMenuItem.Name = "opcionesToolStripMenuItem";
             opcionesToolStripMenuItem.Size = new Size(180, 22);
             opcionesToolStripMenuItem.Text = "Opciones";
@@ -343,12 +351,13 @@
             notifyIcon.Text = "Kakarot";
             notifyIcon.Visible = true;
             // 
-            // toolStripMenuItem2
+            // permitirMultiplesInstanciasToolStripMenuItem
             // 
-            toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(180, 22);
-            toolStripMenuItem2.Text = "Concatenar";
-            toolStripMenuItem2.Click += toolStripMenuItem2_Click;
+            permitirMultiplesInstanciasToolStripMenuItem.CheckOnClick = true;
+            permitirMultiplesInstanciasToolStripMenuItem.Name = "permitirMultiplesInstanciasToolStripMenuItem";
+            permitirMultiplesInstanciasToolStripMenuItem.Size = new Size(265, 22);
+            permitirMultiplesInstanciasToolStripMenuItem.Text = "Permitir multiples instancias";
+            permitirMultiplesInstanciasToolStripMenuItem.CheckedChanged += permitirMultiplesInstanciasToolStripMenuItem_CheckedChanged;
             // 
             // fjntr
             // 
@@ -409,5 +418,6 @@
         private ToolStripMenuItem dSKROMToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem toolStripMenuItem2;
+        private ToolStripMenuItem permitirMultiplesInstanciasToolStripMenuItem;
     }
 }
