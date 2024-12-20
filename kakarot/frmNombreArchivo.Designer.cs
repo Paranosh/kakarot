@@ -51,7 +51,7 @@
             // 
             listBox1.FormattingEnabled = true;
             listBox1.ItemHeight = 15;
-            listBox1.Location = new Point(2, 2);
+            listBox1.Location = new Point(2, 0);
             listBox1.Margin = new Padding(2);
             listBox1.Name = "listBox1";
             listBox1.Size = new Size(596, 94);
@@ -69,9 +69,9 @@
             // 
             // button1
             // 
-            button1.Location = new Point(516, 100);
+            button1.Location = new Point(404, 99);
             button1.Name = "button1";
-            button1.Size = new Size(75, 23);
+            button1.Size = new Size(194, 23);
             button1.TabIndex = 6;
             button1.Text = "Concatena";
             button1.UseVisualStyleBackColor = true;
