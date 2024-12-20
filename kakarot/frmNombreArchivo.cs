@@ -29,7 +29,7 @@ namespace kakarot
             {
                 if (line.Replace("\r\n", "") != "") listBox1.Items.Add(line);
             }
-            if (listBox1.Items.Count >1) checkBox1.Enabled = false;
+            if (listBox1.Items.Count > 1) checkBox1.Enabled = false;
             textBox1.AppendText(Compartida.NombreArchivo);
             this.Focus();
         }
@@ -57,7 +57,7 @@ namespace kakarot
             if (!File.Exists(Directory.GetCurrentDirectory() + "\\dsk2rom.rom"))
             {
                 checkBox1.Checked = false;
-                MessageBox.Show("Por favor, descarga el disk2rom.rom desde: http://home.kabelfoon.nl/~vincentd/ \r\n o desde https://github.com/joyrex2001/dsk2rom/ \r\n y ponlo en " + Directory.GetCurrentDirectory() + "\\","Atención");
+                MessageBox.Show("Por favor, descarga el disk2rom.rom desde: http://home.kabelfoon.nl/~vincentd/ \r\n o desde https://github.com/joyrex2001/dsk2rom/ \r\n y ponlo en " + Directory.GetCurrentDirectory() + "\\", "Atención");
                 Process.Start("https://github.com/joyrex2001/dsk2rom");
                 Process.Start("http://home.kabelfoon.nl/~vincentd/");
             }
@@ -68,5 +68,9 @@ namespace kakarot
             }
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
