@@ -1,4 +1,4 @@
-using System.ComponentModel;
+ï»¿using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Net;
@@ -43,7 +43,7 @@ namespace kakarot
         int ContadorDescargas = 0;
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
-            // Restaurar la ventana al hacer doble clic en el ícono
+            // Restaurar la ventana al hacer doble clic en el Ã­cono
             this.Show();
             this.WindowState = FormWindowState.Normal;
             notifyIcon.Visible = false;
@@ -60,7 +60,7 @@ namespace kakarot
 
             foreach (string path in commonPaths)
             {
-                // Construir la ruta completa donde podría estar el ejecutable
+                // Construir la ruta completa donde podrÃ­a estar el ejecutable
                 string potentialPath = Path.Combine(path, appName, $"{appName}.exe");
 
                 if (File.Exists(potentialPath))
@@ -86,7 +86,7 @@ namespace kakarot
         }
         private void Form1_Resize(object sender, EventArgs e)
         {
-            // Asegurar que el panel de busqueda esté siempre en la esquina inferior derecha
+            // Asegurar que el panel de busqueda estÃ© siempre en la esquina inferior derecha
             panel1.Left = this.ClientSize.Width - panel1.Width - 50;  // 10px de margen de la derecha
             panel1.Top = this.ClientSize.Height - panel1.Height - 50; // 10px de margen inferior
             listBox1.Width = this.ClientSize.Width;
@@ -94,14 +94,14 @@ namespace kakarot
 
             if (this.WindowState == FormWindowState.Minimized)
             {
-                // Mostrar el ícono en la bandeja del sistema
+                // Mostrar el Ã­cono en la bandeja del sistema
                 notifyIcon.Visible = true;
 
                 // Ocultar la ventana principal
                 this.Hide();
 
-                // Mostrar un mensaje de notificación
-                notifyIcon.ShowBalloonTip(1000, "Aplicación minimizada", "La aplicación está en la bandeja del sistema.", ToolTipIcon.Info);
+                // Mostrar un mensaje de notificaciÃ³n
+                notifyIcon.ShowBalloonTip(1000, "AplicaciÃ³n minimizada", "La aplicaciÃ³n estÃ¡ en la bandeja del sistema.", ToolTipIcon.Info);
             }
 
         }
@@ -112,7 +112,7 @@ namespace kakarot
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
             await client.DownloadFileTaskAsync(Uri, Filename);
 
-           
+
         }
         public AsyncCompletedEventHandler DownloadFileCompleted(string filename)
         {
@@ -127,20 +127,20 @@ namespace kakarot
                 else
                 {
                     ContadorDescargas++;
-                    //terminó
+                    //terminÃ³
                     if (filename == "sha1sums.txt")
                     {
                         listado = File.ReadAllText("sha1sums.txt");
                         File.Delete(filename);
-                        // Separar el string en líneas
+                        // Separar el string en lÃ­neas
                         string[] lines = listado.Trim().Split('\n');
                         // Crear una lista para almacenar los objetos
                         fileList = new List<FileData>();
                         foreach (var line in lines)
                         {
-                            // Separar la línea en dos partes: Hash y FilePath
+                            // Separar la lÃ­nea en dos partes: Hash y FilePath
                             string[] parts = line.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                            // Si la línea tiene dos partes, las asignamos a un objeto FileData
+                            // Si la lÃ­nea tiene dos partes, las asignamos a un objeto FileData
                             if (parts.Length == 2)
                             {
                                 fileList.Add(new FileData
@@ -163,10 +163,10 @@ namespace kakarot
                         //el primer item es el archivo mas nuevo en fj
                         foreach (var line in lines)
                         {
-                            // Separar los elementos por tabulación
+                            // Separar los elementos por tabulaciÃ³n
                             string[] parts = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
-                            // Crear un objeto FileData si la línea tiene al menos 3 partes
-                            if(b==0) fechaultimaactualizacion= parts[0].Trim(); 
+                            // Crear un objeto FileData si la lÃ­nea tiene al menos 3 partes
+                            if (b == 0) fechaultimaactualizacion = parts[0].Trim();
                             if (parts.Length >= 3)
                             {
                                 fileListUpdate.Add(new FileData
@@ -174,7 +174,7 @@ namespace kakarot
                                     Date = parts[0].Trim(),
                                     Status = parts[1].Trim(),
                                     Url = parts[2].Trim()
-                                   
+
                                 });
                             }
                             b++;
@@ -203,7 +203,7 @@ namespace kakarot
                     }
                     if (ContadorDescargas == 2)
                     {
-                        toolStripStatusLabel1.Text = "Añadiendo datos al grid...por favor espere";
+                        toolStripStatusLabel1.Text = "AÃ±adiendo datos al grid...por favor espere";
                         Task.Run(() =>
                          {
                              Invoke((Action)(() =>
@@ -230,7 +230,7 @@ namespace kakarot
         /// </summary>
         /// <param name="contextMenuStrip">El ContextMenuStrip al cual agregar el elemento.</param>
         /// <param name="itemText">El texto del nuevo elemento.</param>
-        /// <param name="position">La posición en la que insertar el elemento (0 para inicio).</param>
+        /// <param name="position">La posiciÃ³n en la que insertar el elemento (0 para inicio).</param>
         /// <param name="isChecked">Si el elemento debe estar marcado inicialmente.</param>
         /// <returns>El elemento creado.</returns>
         static ToolStripMenuItem AddMenuItem(ContextMenuStrip contextMenuStrip, string itemText, int position, bool isChecked)
@@ -248,25 +248,25 @@ namespace kakarot
                 ToolStripMenuItem clickedItem = sender as ToolStripMenuItem;
                 if (clickedItem != null)
                 {
-                    // MessageBox.Show($"¡Hiciste clic en: {clickedItem.Text}!");
+                    // MessageBox.Show($"Â¡Hiciste clic en: {clickedItem.Text}!");
                 }
             };
 
-            // Validar la posición y agregar el elemento al menú
+            // Validar la posiciÃ³n y agregar el elemento al menÃº
             if (position < 0 || position > contextMenuStrip.Items.Count)
             {
-                position = contextMenuStrip.Items.Count; // Agregar al final si la posición es inválida
+                position = contextMenuStrip.Items.Count; // Agregar al final si la posiciÃ³n es invÃ¡lida
             }
             contextMenuStrip.Items.Insert(position, newItem);
 
             return newItem; // Retornar el elemento creado
         }
         /// <summary>
-        /// Agrega un ComboBox como subitem de un elemento del menú.
+        /// Agrega un ComboBox como subitem de un elemento del menÃº.
         /// </summary>
         /// <param name="parentItem">El elemento principal al cual agregar el ComboBox.</param>
         /// <param name="items">Los elementos del ComboBox.</param>
-        /// <param name="onSelectedIndexChanged">Acción a ejecutar cuando se selecciona un ítem.</param>
+        /// <param name="onSelectedIndexChanged">AcciÃ³n a ejecutar cuando se selecciona un Ã­tem.</param>
         static void AddComboBoxSubItem(string name, ToolStripMenuItem parentItem, string[] items, Action<string> onSelectedIndexChanged, bool AddSeparator)
         {
             // Crear un ComboBox
@@ -296,7 +296,7 @@ namespace kakarot
             if (AddSeparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
         }
         /// <summary>
-        /// Agrega un subelemento (subitem) a un elemento existente del menú.
+        /// Agrega un subelemento (subitem) a un elemento existente del menÃº.
         /// </summary>
         /// <param name="parentItem">El elemento principal al cual agregar el subitem.</param>
         /// <param name="subItemText">El texto del subitem.</param>
@@ -311,7 +311,7 @@ namespace kakarot
                 ToolStripMenuItem clickedSubItem = sender as ToolStripMenuItem;
                 if (clickedSubItem != null)
                 {
-                    // MessageBox.Show($"¡Hiciste clic en el subitem: {clickedSubItem.Text}!");
+                    // MessageBox.Show($"Â¡Hiciste clic en el subitem: {clickedSubItem.Text}!");
                     // if (clickedSubItem.Text == "Lanza OpenMSX") { MessageBox.Show(""); }
                     clickedItem?.Invoke(true);
                 }
@@ -398,7 +398,7 @@ namespace kakarot
                 , selectedItem =>
                 {
                     TipoDeMApper = selectedItem;
-                    MessageBox.Show("Se forzará en OpenMSX el tipo de mapper " + selectedItem, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Se forzarÃ¡ en OpenMSX el tipo de mapper " + selectedItem, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     // MessageBox.Show($"Seleccionaste: {selectedItem}");
                 }, true);
                 AddSubMenuItemToolStrip(OpenMSX, "Ejecuta ROM/DSK/CAS/WAV", false, clickedItem =>
@@ -559,14 +559,14 @@ namespace kakarot
                     else if (checkBox3.Checked) columnaAbuscar = "Url";
                 }
 
-                // Verificar si columnaAbuscar tiene un valor válido
+                // Verificar si columnaAbuscar tiene un valor vÃ¡lido
                 if (string.IsNullOrEmpty(columnaAbuscar))
                 {
                     toolStripStatusLabel1.Text = "No se ha seleccionado una columna para aplicar el filtro.";
                     return;
                 }
 
-                // Construir la expresión de filtro
+                // Construir la expresiÃ³n de filtro
                 string filterExpression = string.IsNullOrWhiteSpace(filterText)
                     ? string.Empty
                     : $"{columnaAbuscar} LIKE '%{filterText.Replace("'", "''")}%'";
@@ -632,7 +632,7 @@ namespace kakarot
             alternatingRowStyle.ForeColor = Color.Black;
             _dgView.AlternatingRowsDefaultCellStyle = alternatingRowStyle;
 
-            // Bordes y selección (Borders and Selection)
+            // Bordes y selecciÃ³n (Borders and Selection)
             _dgView.GridColor = Color.DarkGoldenrod; // Golden-brown grid lines
             _dgView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             _dgView.RowHeadersVisible = false; // Hide row header (optional)
@@ -641,20 +641,20 @@ namespace kakarot
             _dgView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             _dgView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
-            // Permitir la selección completa de la fila (Allow full row selection)
+            // Permitir la selecciÃ³n completa de la fila (Allow full row selection)
             _dgView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             _dgView.MultiSelect = true; // Allow multi-selection
             _dgView.ResumeLayout();
         }
         private void ConfigureListBoxAppearance(ListBox listBox)
         {
-            // Configuración general
+            // ConfiguraciÃ³n general
             listBox.BorderStyle = BorderStyle.Fixed3D;
             listBox.BackColor = Color.DarkGray;//.Beige;
             listBox.ForeColor = Color.Black;
             listBox.Font = new Font("Arial", 10F, FontStyle.Regular);
 
-            // Selección múltiple
+            // SelecciÃ³n mÃºltiple
             listBox.SelectionMode = SelectionMode.MultiExtended;
 
             // Habilitar dibujo personalizado
@@ -665,7 +665,7 @@ namespace kakarot
             {
                 if (e.Index < 0) return;
 
-                // Determinar si el elemento está seleccionado
+                // Determinar si el elemento estÃ¡ seleccionado
                 bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
 
                 // Colores de fondo y texto
@@ -675,7 +675,7 @@ namespace kakarot
                 // Dibujar fondo
                 e.Graphics.FillRectangle(new SolidBrush(backgroundColor), e.Bounds);
 
-                // Calcular la posición del texto para centrarlo verticalmente
+                // Calcular la posiciÃ³n del texto para centrarlo verticalmente
                 string text = listBox.Items[e.Index].ToString();
                 SizeF textSize = e.Graphics.MeasureString(text, e.Font);
                 float textY = e.Bounds.Y + (e.Bounds.Height - textSize.Height) / 2;
@@ -688,7 +688,7 @@ namespace kakarot
                     new PointF(e.Bounds.X + 5, textY) // Texto alineado a la izquierda con un margen
                 );
 
-                // Dibujar línea negra horizontal (similar a las líneas de un DataGridView)
+                // Dibujar lÃ­nea negra horizontal (similar a las lÃ­neas de un DataGridView)
                 using (Pen linePen = new Pen(Color.Black, 1))
                 {
                     e.Graphics.DrawLine(linePen, e.Bounds.Left, e.Bounds.Bottom - 1, e.Bounds.Right, e.Bounds.Bottom - 1);
@@ -810,10 +810,10 @@ namespace kakarot
                 {
                     using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
                     {
-                        //folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
+                        //folderDialog.Description = "Seleccione la carpeta donde se descargarÃ¡ el archivo:";
                         //folderDialog.ShowNewFolderButton = true;
 
-                        // Mostrar el cuadro de diálogo
+                        // Mostrar el cuadro de diÃ¡logo
                         if (folderDialog.ShowDialog() == DialogResult.OK)
                         {
                             // Mostrar la ruta seleccionada en el cuadro de texto
@@ -832,10 +832,10 @@ namespace kakarot
                 {
                     using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
                     {
-                        folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
+                        folderDialog.Description = "Seleccione la carpeta donde se descargarÃ¡ el archivo:";
                         folderDialog.ShowNewFolderButton = true;
 
-                        // Mostrar el cuadro de diálogo
+                        // Mostrar el cuadro de diÃ¡logo
                         if (folderDialog.ShowDialog() == DialogResult.OK)
                         {
                             // Mostrar la ruta seleccionada en el cuadro de texto
@@ -866,7 +866,7 @@ namespace kakarot
             await client.DownloadFileTaskAsync(Uri, Filename);
         }
         /// <summary>
-        /// Busca archivos recursivamente en un directorio y sus subdirectorios con extensiones específicas.
+        /// Busca archivos recursivamente en un directorio y sus subdirectorios con extensiones especÃ­ficas.
         /// </summary>
         /// <param name="path">Ruta del directorio inicial.</param>
         /// <param name="extensions">Array de extensiones a buscar (con punto, e.g., ".rom").</param>
@@ -905,29 +905,29 @@ namespace kakarot
             return foundFiles;
         }
         /// <summary>
-        /// Muestra un cuadro de diálogo preguntando si se debe ejecutar un archivo.
+        /// Muestra un cuadro de diÃ¡logo preguntando si se debe ejecutar un archivo.
         /// </summary>
         /// <param name="filePath">Ruta completa del archivo a ejecutar.</param>
-        /// <returns>True si el usuario selecciona 'Sí', False si selecciona 'No'.</returns>
+        /// <returns>True si el usuario selecciona 'SÃ­', False si selecciona 'No'.</returns>
         static bool AskToExecuteFile(string filePath)
         {
-            // Validar que la ruta no sea nula o vacía
+            // Validar que la ruta no sea nula o vacÃ­a
             if (string.IsNullOrEmpty(filePath))
-                throw new ArgumentException("La ruta del archivo no puede ser nula o vacía.", nameof(filePath));
+                throw new ArgumentException("La ruta del archivo no puede ser nula o vacÃ­a.", nameof(filePath));
 
-            // Construir el mensaje para el cuadro de diálogo
-            string message = $"¿Deseas ejecutar el archivo?\n{filePath}";
-            string caption = "Confirmación de ejecución";
+            // Construir el mensaje para el cuadro de diÃ¡logo
+            string message = $"Â¿Deseas ejecutar el archivo?\n{filePath}";
+            string caption = "ConfirmaciÃ³n de ejecuciÃ³n";
 
-            // Mostrar el cuadro de diálogo con botones Sí y No
+            // Mostrar el cuadro de diÃ¡logo con botones SÃ­ y No
             DialogResult result = MessageBox.Show(
-                message,                  // Texto del cuadro de diálogo
-                caption,                  // Título del cuadro de diálogo
+                message,                  // Texto del cuadro de diÃ¡logo
+                caption,                  // TÃ­tulo del cuadro de diÃ¡logo
                 MessageBoxButtons.YesNo,  // Botones disponibles
-                MessageBoxIcon.Question   // Icono del cuadro de diálogo
+                MessageBoxIcon.Question   // Icono del cuadro de diÃ¡logo
             );
 
-            // Retornar True si el usuario selecciona 'Sí', False si selecciona 'No'
+            // Retornar True si el usuario selecciona 'SÃ­', False si selecciona 'No'
             return result == DialogResult.Yes;
         }
         public AsyncCompletedEventHandler DownloadFileCompletedArchivos(string filename, bool runInOpenMSX)
@@ -982,7 +982,7 @@ namespace kakarot
                                         p.WaitForExit();
                                         //borraremos el contenido de tmp
                                         ClearDirectory(Application.StartupPath + "\\tmp\\");
-                                        // Restaurar la ventana al hacer doble clic en el ícono
+                                        // Restaurar la ventana al hacer doble clic en el Ã­cono
                                         this.Show();
                                         this.WindowState = FormWindowState.Normal;
                                         notifyIcon.Visible = false;
@@ -1009,7 +1009,7 @@ namespace kakarot
                                     p.WaitForExit();
                                     //borraremos el contenido de tmp
                                     ClearDirectory(Application.StartupPath + "\\tmp\\");
-                                    // Restaurar la ventana al hacer doble clic en el ícono
+                                    // Restaurar la ventana al hacer doble clic en el Ã­cono
                                     this.Show();
                                     this.WindowState = FormWindowState.Normal;
                                     notifyIcon.Visible = false;
@@ -1038,13 +1038,13 @@ namespace kakarot
                             p.WaitForExit();
                             //borraremos el contenido de tmp
                             ClearDirectory(Application.StartupPath + "\\tmp\\");
-                            // Restaurar la ventana al hacer doble clic en el ícono
+                            // Restaurar la ventana al hacer doble clic en el Ã­cono
                             this.Show();
                             this.WindowState = FormWindowState.Normal;
                             notifyIcon.Visible = false;
 
                         }
-                        //Hay que tratar el resto de archivos?¿?¿
+                        //Hay que tratar el resto de archivos?Â¿?Â¿
                     }
                     else
                         //comprobar en caso de ser zip si hay que descomprimir
@@ -1077,7 +1077,7 @@ namespace kakarot
         {
             // Validar que el directorio exista
             if (string.IsNullOrEmpty(directoryPath) || !Directory.Exists(directoryPath))
-                throw new ArgumentException("La ruta del directorio no es válida o no existe.", nameof(directoryPath));
+                throw new ArgumentException("La ruta del directorio no es vÃ¡lida o no existe.", nameof(directoryPath));
 
             // Borrar todos los archivos del directorio
             foreach (var file in Directory.GetFiles(directoryPath))
@@ -1201,7 +1201,7 @@ namespace kakarot
                 //folderDialog.Description = "Seleccione la carpeta donde se encuentra OpenMSX";
                 //folderDialog.ShowNewFolderButton = false;
 
-                // Mostrar el cuadro de diálogo
+                // Mostrar el cuadro de diÃ¡logo
                 if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
                     //iniciacilzamos config...
@@ -1330,13 +1330,13 @@ namespace kakarot
                     }
                     Environment.CurrentDirectory = prevWorking;
                     //  File.WriteAllText(path.ToLower().Replace(".bas", ".ASCII"), file);
-                    DialogResult dialogResult = MessageBox.Show("Archivo generado correctamente.\r\n ¿Quieres abrirlo?", "Info", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    DialogResult dialogResult = MessageBox.Show("Archivo generado correctamente.\r\n Â¿Quieres abrirlo?", "Info", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
                     if (dialogResult == DialogResult.Yes)
                     {
                         ProcessStartInfo processInfo = new ProcessStartInfo
                         {
                             FileName = path.ToLower().Replace(".bas", ".ASCII"),
-                            UseShellExecute = true // Necesario para abrir con la aplicación predeterminada
+                            UseShellExecute = true // Necesario para abrir con la aplicaciÃ³n predeterminada
                         };
                         Process.Start(processInfo);
                     }
@@ -1413,7 +1413,7 @@ namespace kakarot
                                 string DestFolfer = folder + "\\" + fileName.Substring(0, fileName.Length - 4);
                                 if (Directory.Exists(DestFolfer))
                                 {
-                                    DialogResult dialogResult = MessageBox.Show("El directorio de destino ya existe, si pulsa \"SI\" se borrará todo, incluyendo su contenido, ¿esta seguro?", "Advertencia", MessageBoxButtons.YesNo);
+                                    DialogResult dialogResult = MessageBox.Show("El directorio de destino ya existe, si pulsa \"SI\" se borrarÃ¡ todo, incluyendo su contenido, Â¿esta seguro?", "Advertencia", MessageBoxButtons.YesNo);
                                     if (dialogResult == DialogResult.Yes)
                                     {
                                         //   Directory.Delete(DestFolfer, true);
@@ -1477,7 +1477,7 @@ namespace kakarot
         }
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
-            /// hay que añadir opcion enable a false del menu open msx si PathOpenMSX is not null
+            /// hay que aÃ±adir opcion enable a false del menu open msx si PathOpenMSX is not null
             if (PathOpenMSX is not null) OpenMSX.Enabled = false;
             if (listBox1.SelectedIndex == -1) listBox1.SelectedIndex = 0;
             toolStripStatusLabel1.Text = "Total de archivos: " + listBox1.Items.Count.ToString();
@@ -1528,6 +1528,75 @@ namespace kakarot
             }
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        private void rOMCASToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dlg = new OpenFileDialog();
+            dlg.Filter = "Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk|Todos los archivos (*.*)|*.*";
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    string outputPath = Application.StartupPath + "\\tmp\\jakusha.exe";
+                    string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+                    foreach (string resourceName in resourceNames)
+                    {
+                        if (resourceName.ToLower().Contains("jakusha.exe"))
+                        {
+                            ExtractEmbeddedResource(resourceName, outputPath);
+                        }
+
+                    }
+
+                    FileInfo fs = new FileInfo(dlg.FileName);
+                    long filesize = fs.Length / 1024;
+                    if (filesize > 32) { MessageBox.Show("Maximo ROMs de 32Kb.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); }
+                    else
+                    {
+                        File.Copy(dlg.FileName, Application.StartupPath + "\\tmp\\" + dlg.SafeFileName, true);
+                        try
+                        {
+                            ProcessStartInfo psi = new ProcessStartInfo();
+                            psi.FileName = Application.StartupPath + "\\tmp\\jakusha.exe";
+                            psi.Arguments = "\"" + dlg.SafeFileName + "\" \"" + dlg.SafeFileName.ToLower().Replace(".rom", ".cas") + "\"";
+                            psi.UseShellExecute = false;
+                            psi.RedirectStandardOutput = true;
+                            psi.CreateNoWindow = true;
+                            psi.WorkingDirectory = Application.StartupPath + "\\tmp\\";
+                            var p = Process.Start(psi);
+                            p.WaitForExit();
+                            File.Delete(Application.StartupPath + "\\tmp\\" + dlg.SafeFileName);
+
+                            FolderBrowserDialog folderDlg = new FolderBrowserDialog();
+                            folderDlg.ShowNewFolderButton = true;
+
+                            // Show the FolderBrowserDialog.  
+                            DialogResult result = folderDlg.ShowDialog();
+                            if (result == DialogResult.OK)
+                            {
+                                File.Copy(Application.StartupPath + "\\tmp\\" + dlg.SafeFileName.ToLower().Replace(".rom", ".cas"), folderDlg.SelectedPath + "\\" + dlg.SafeFileName.ToLower().Replace(".rom", ".cas"));
+                            }
+                            File.Delete(Application.StartupPath + "\\tmp\\" + dlg.SafeFileName.ToLower().Replace(".rom", ".cas"));
+                            MessageBox.Show("Archivo creado correctamente.\r\n Thanks to ã‚¹ã‚¿ãƒ¼ãƒ‹ãƒ£ãƒ³ï¼ˆå…ƒã‚¹ã‚¿ãƒ¼ãƒžãƒ³ï¼‰@starmanblues", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            File.Delete(dlg.SafeFileName);
+                            MessageBox.Show("Error:\r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+
+                    }
+                }
+                catch (IOException)
+                {
+                    MessageBox.Show("Error lanzando " + dlg.FileName + "\r\n", "Error");
+                }
+            }
+
+
+
+
         }
     }
 }
