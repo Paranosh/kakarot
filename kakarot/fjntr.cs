@@ -35,7 +35,7 @@ namespace kakarot
         string PathOpenMSX, TipoDeMApper;
         private System.Windows.Forms.Timer fadeTimer;
         private float opacityIncrement;
-        private bool fadeIn, permitirVariasInstancias, descargando= false;
+        private bool fadeIn, permitirVariasInstancias, descargando = false;
         private DataTable _dataTableDV1;
         private DataTable _dataTableDV2;
         string listado = "", updatelistado = "", archivosdescargados = "Descargado ";
@@ -90,7 +90,7 @@ namespace kakarot
             panel1.Left = this.ClientSize.Width - panel1.Width - 50;  // 10px de margen de la derecha
             panel1.Top = this.ClientSize.Height - panel1.Height - 50; // 10px de margen inferior
             listBox1.Width = this.ClientSize.Width;
-            listBox1.Height = this.ClientSize.Height-20;
+            listBox1.Height = this.ClientSize.Height - 20;
 
             if (this.WindowState == FormWindowState.Minimized)
             {
@@ -111,8 +111,9 @@ namespace kakarot
             client.DownloadFileCompleted += DownloadFileCompleted(Filename);
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
             await client.DownloadFileTaskAsync(Uri, Filename);
-        }
 
+           
+        }
         public AsyncCompletedEventHandler DownloadFileCompleted(string filename)
         {
             Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
@@ -133,15 +134,12 @@ namespace kakarot
                         File.Delete(filename);
                         // Separar el string en líneas
                         string[] lines = listado.Trim().Split('\n');
-
                         // Crear una lista para almacenar los objetos
                         fileList = new List<FileData>();
-
                         foreach (var line in lines)
                         {
                             // Separar la línea en dos partes: Hash y FilePath
                             string[] parts = line.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-
                             // Si la línea tiene dos partes, las asignamos a un objeto FileData
                             if (parts.Length == 2)
                             {
@@ -152,22 +150,23 @@ namespace kakarot
                                 });
                             }
                         }
-
                     }
                     if (filename == "Update-Log.txt")
                     {
+                        int b = 0;
+                        string fechaultimaactualizacion = "";
                         updatelistado = File.ReadAllText("Update-Log.txt");
                         File.Delete(filename);
                         string[] lines = updatelistado.Trim().Split('\n');
-
                         // Crear una lista para almacenar objetos
                         fileListUpdate = new List<FileData>();
+                        //el primer item es el archivo mas nuevo en fj
                         foreach (var line in lines)
                         {
                             // Separar los elementos por tabulación
                             string[] parts = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
-
                             // Crear un objeto FileData si la línea tiene al menos 3 partes
+                            if(b==0) fechaultimaactualizacion= parts[0].Trim(); 
                             if (parts.Length >= 3)
                             {
                                 fileListUpdate.Add(new FileData
@@ -175,8 +174,31 @@ namespace kakarot
                                     Date = parts[0].Trim(),
                                     Status = parts[1].Trim(),
                                     Url = parts[2].Trim()
+                                   
                                 });
                             }
+                            b++;
+                        }
+                        if (bool.Parse(ConfigurationManager.AppSettings["InformaDeActualizacionesFileHunter"]))
+                        {
+                            informarDeActualizacionesToolStripMenuItem.Checked = true;
+                            //hay que comprobar si existe una actualizacion respecto a la ultima vez que se miro el grid, teniendo en cuenta que si no se ha mirado todavia
+                            //el valor de UltimoCheckNovedadesFileHunter estara en blanco
+                            //a la izquierda la fecha del ultimo archivo actualizado en fh a la derecha la fecha en la que se miro el grid de novedades
+                            int a = 0;
+                            string FechaDelUltimoArchivoFJ = "", FechaEnLaQueSeMiro = "";
+                            var LasDosFechas = ConfigurationManager.AppSettings["UltimoCheckNovedadesFileHunter"].ToString();
+                            string[] array = LasDosFechas.Split('|');
+                            foreach (string value in array)
+                            {
+                                if (a == 0) FechaDelUltimoArchivoFJ = value;
+                                if (a == 1) FechaEnLaQueSeMiro = value;
+                                a++;
+                            }
+                            //miramos si el listbox tiene un archivo con fecha posterior a FechaUltimoArchivoFJ
+                            DateTime dt1 = DateTime.Parse(FechaDelUltimoArchivoFJ);
+                            DateTime dt2 = DateTime.Parse(fechaultimaactualizacion);
+                            if (dt2 > dt1) MessageBox.Show("Hay nuevos archivos en filehunter desde la ultima vez que miraste, recuerda de ir a ver las novedades para que este mensaje deje de salir", "Novedades", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
                     if (ContadorDescargas == 2)
@@ -193,12 +215,8 @@ namespace kakarot
 
                              }));
                          });
-
-
                     }
-
                 }
-
             };
             return new AsyncCompletedEventHandler(action);
 
@@ -325,8 +343,6 @@ namespace kakarot
             {
                 PathOpenMSX = config.AppSettings.Settings["OpenMSXPath"].Value;
             }
-
-
             if (!Directory.Exists(Application.StartupPath + "\\tmp\\")) Directory.CreateDirectory(Application.StartupPath + "\\tmp\\");
             ClearDirectory(Application.StartupPath + "\\tmp\\");
             toolStripComboBox3.SelectedIndex = 0;
@@ -335,13 +351,12 @@ namespace kakarot
                 /* config.AppSettings.Settings["OpenMSXPath"].Value = PathOpenMSX;
                  config.Save(ConfigurationSaveMode.Modified);
                  ConfigurationManager.RefreshSection("appSettings");*/
-                 OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false);
+                OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false);
                 //AddSubMenuItemToolStrip(OpenMSX, "TIPO DE MAPPER", true, clickedItem =>
                 //{
                 //    //MessageBox.Show(selectedItem);
                 //    // MessageBox.Show($"Seleccionaste: {selectedItem}");
                 //});
-
                 AddSubMenuItemToolStrip(OpenMSX, "Ejecuta Seleccionado", false, clickedItem =>
                 {
                     if (IsControlVisible(dataGridView1))
@@ -423,8 +438,6 @@ namespace kakarot
                 });
             }
             descomprimirDespuesDeDescargarToolStripMenuItem.Checked = bool.Parse(ConfigurationManager.AppSettings["DescomprimirDespuesdeDescargar"]);
-
-
             //listamos los puertos com si existen en el equipo si no devolvera la palabra null
             string[] comPorts = SerialPort.GetPortNames();
 
@@ -506,10 +519,10 @@ namespace kakarot
         private void ApplyFilter(string filterText, object target, DataTable _dataTable = null)
         {
             if (target == null) return;
-            
+
             if (target is ListBox listBox)
             {
-               
+
                 // Aplicar el filtro
                 var filteredItems = string.IsNullOrWhiteSpace(filterText)
                     ? originalItems // Si no hay filtro, mostrar todos los elementos
@@ -525,7 +538,7 @@ namespace kakarot
                 listBox.EndUpdate();
 
                 // Actualizar el estado en un ToolStripStatusLabel si es necesario
-              toolStripStatusLabel1.Text = "Total de elementos: " + listBox.Items.Count;
+                toolStripStatusLabel1.Text = "Total de elementos: " + listBox.Items.Count;
             }
             else if (target is DataGridView dataGridView)
             {
@@ -633,7 +646,6 @@ namespace kakarot
             _dgView.MultiSelect = true; // Allow multi-selection
             _dgView.ResumeLayout();
         }
-
         private void ConfigureListBoxAppearance(ListBox listBox)
         {
             // Configuración general
@@ -715,11 +727,11 @@ namespace kakarot
             ////    MessageBox.Show(imagen);
             ////}
         }
-
         private void verNovedadesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (verNovedadesToolStripMenuItem.Checked)
             {
+                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 textBox1.Text = "";
                 dataGridView1.Visible = false;
                 buscarToolStripMenuItem1.Checked = false;
@@ -727,6 +739,10 @@ namespace kakarot
                 dataGridView2.Columns[3].Width = 80;
                 dataGridView2.BringToFront();
                 dataGridView2.Visible = true;
+                //a la izquierda la fecha del ultimo archivo actualizado en fh a la derecha la fecha en la que se miro el grid de novedades
+                config.AppSettings.Settings["UltimoCheckNovedadesFileHunter"].Value = dataGridView2.Rows[0].Cells[0].Value.ToString() + "|" + DateTime.Now.ToShortDateString();
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
             }
             else
             {
@@ -735,7 +751,6 @@ namespace kakarot
                 dataGridView1.Visible = true;
             }
         }
-
         private void buscarToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
         {
 
@@ -753,46 +768,39 @@ namespace kakarot
                 panel1.Visible = false;
             }
         }
-
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
             checkBox1.Checked = false;
             checkBox2.Checked = false;
         }
-
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             checkBox1.Checked = false;
             checkBox3.Checked = false;
         }
-
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             checkBox2.Checked = false;
             checkBox3.Checked = false;
         }
-
         private void checkBox2_Click(object sender, EventArgs e)
         {
             checkBox2.Checked = true;
             textBox1.Text = "";
             SetupTextBoxFilter();
         }
-
         private void checkBox1_Click(object sender, EventArgs e)
         {
             checkBox1.Checked = true;
             textBox1.Text = "";
             SetupTextBoxFilter();
         }
-
         private void checkBox3_Click(object sender, EventArgs e)
         {
             checkBox3.Checked = true;
             textBox1.Text = "";
             SetupTextBoxFilter();
         }
-
         private void descargarSeleccionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string paz = "";
@@ -842,7 +850,7 @@ namespace kakarot
             }
             if (IsControlVisible(listBox1))
             {
-                if (listBox1.SelectedItem != null) 
+                if (listBox1.SelectedItem != null)
                 {
                     listBox1_DoubleClick(sender, e);
                 }
@@ -1087,7 +1095,7 @@ namespace kakarot
         {
             // Ejemplo: mostrar progreso y nombre de archivo
             //this.Focus();
-           toolStripStatusLabel1.Text = "Descargando " + nombreArchivo + " " + e.ProgressPercentage + "% de ( " + e.BytesReceived + " / " + e.TotalBytesToReceive + ")";
+            toolStripStatusLabel1.Text = "Descargando " + nombreArchivo + " " + e.ProgressPercentage + "% de ( " + e.BytesReceived + " / " + e.TotalBytesToReceive + ")";
         }
         private readonly static string reservedCharacters = "!*'();:@&=+$,?%#[]";
         public static string UrlEncode(string value)
@@ -1123,7 +1131,6 @@ namespace kakarot
                 Process.Start(new ProcessStartInfo("https://download.file-hunter.com/assets/webmsx.html?url=" + url) { UseShellExecute = true });
             }
         }
-
         private void descomprimirDespuesDeDescargarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -1138,7 +1145,6 @@ namespace kakarot
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
-
         private void dataGridView2_SelectionChanged(object sender, EventArgs e)
         {
             if (IsControlVisible(dataGridView2) && dataGridView2.CurrentRow is not null)
@@ -1147,7 +1153,6 @@ namespace kakarot
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
             }
         }
-
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
         {
             if (IsControlVisible(dataGridView1) && dataGridView1.CurrentRow is not null)
@@ -1156,17 +1161,14 @@ namespace kakarot
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
             }
         }
-
         private void toolStripComboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (toolStripComboBox3.SelectedItem.ToString() != "Filtro rapido") ApplyFilter(toolStripComboBox3.SelectedItem.ToString(), _dataTableDV1);
+            if (toolStripComboBox3.SelectedItem.ToString() != "Filtro rapido") ApplyFilter(toolStripComboBox3.SelectedItem.ToString(), dataGridView1, _dataTableDV1);
         }
-
         private void fjntr_FormClosing(object sender, FormClosingEventArgs e)
         {
             ClearDirectory(Application.StartupPath + "\\tmp\\");
         }
-
         private static void ExtractEmbeddedResource(string resourceName, string outputPath)
         {
             using Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
@@ -1176,8 +1178,6 @@ namespace kakarot
             using FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write);
             resourceStream.CopyTo(fileStream);
         }
-
-
         private void dSKROMToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -1194,7 +1194,6 @@ namespace kakarot
             Dsk2RomFrm d2r = new Dsk2RomFrm();
             d2r.Show();
         }
-
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
@@ -1222,13 +1221,11 @@ namespace kakarot
                 }
             }
         }
-
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
             DragOCMfrm ddragocm = new DragOCMfrm();
             ddragocm.ShowDialog();
         }
-
         private void permitirMultiplesInstanciasToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -1243,7 +1240,6 @@ namespace kakarot
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
-
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             try
@@ -1384,13 +1380,12 @@ namespace kakarot
                 listBox1.Items.Add(entry.Key);
             }
             toolStripStatusLabel1.Text = "Total de archivos: " + listBox1.Items.Count.ToString();
-            originalItems.Clear();  
+            originalItems.Clear();
             foreach (var item in listBox1.Items)
             {
                 originalItems.Add(item.ToString());
             }
         }
-
         private void listBox1_DoubleClick(object sender, EventArgs e)
         {
             foreach (KeyValuePair<string, string> entry in dictionary)
@@ -1432,7 +1427,7 @@ namespace kakarot
                                     }
                                 }
                                 TaskDownloadFileArchivos(folder + "\\" + fileName, url, false);
-                              
+
                             }
                         }
 
@@ -1456,7 +1451,7 @@ namespace kakarot
         //    {
         //        toolStripStatusLabel1.Text = "Error descargando " + url;
         //        descargando = false;
-               
+
         //    }
         //}
         //private void MethodToUpdateControlDownloadFile(string TempFile, string DestFolfer, string filename)
@@ -1467,6 +1462,7 @@ namespace kakarot
         private void filehunterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (PathOpenMSX is not null) OpenMSX.Enabled = true;
+            verNovedadesToolStripMenuItem.Checked = false;
             webMSXToolStripMenuItem.Enabled = true;
             toolStripComboBox3.Enabled = true;
             verNovedadesToolStripMenuItem.Enabled = true;
@@ -1479,7 +1475,6 @@ namespace kakarot
             toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString();
 
         }
-
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
             /// hay que añadir opcion enable a false del menu open msx si PathOpenMSX is not null
@@ -1496,7 +1491,6 @@ namespace kakarot
             panel1.BringToFront();
             listBox1.Visible = true;
         }
-
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             // Configurar evento de filtrado en tiempo real
@@ -1520,8 +1514,20 @@ namespace kakarot
             {
                 ApplyFilter(textBox1.Text, listBox1);
             }
-
-           
+        }
+        private void informarDeActualizacionesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            if (informarDeActualizacionesToolStripMenuItem.Checked)
+            {
+                config.AppSettings.Settings["InformaDeActualizacionesFileHunter"].Value = "true";
+            }
+            else
+            {
+                config.AppSettings.Settings["InformaDeActualizacionesFileHunter"].Value = "false";
+            }
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
         }
     }
 }
