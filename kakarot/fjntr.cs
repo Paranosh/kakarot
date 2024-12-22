@@ -29,6 +29,7 @@ namespace kakarot
             this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
 
         }
+        ToolStripMenuItem OpenMSX;
         WebBrowser webBrowser = new WebBrowser();
         Dictionary<string, string> dictionary = new Dictionary<string, string>();
         string PathOpenMSX, TipoDeMApper;
@@ -334,7 +335,7 @@ namespace kakarot
                 /* config.AppSettings.Settings["OpenMSXPath"].Value = PathOpenMSX;
                  config.Save(ConfigurationSaveMode.Modified);
                  ConfigurationManager.RefreshSection("appSettings");*/
-                ToolStripMenuItem OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false);
+                 OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false);
                 //AddSubMenuItemToolStrip(OpenMSX, "TIPO DE MAPPER", true, clickedItem =>
                 //{
                 //    //MessageBox.Show(selectedItem);
@@ -385,10 +386,10 @@ namespace kakarot
                     MessageBox.Show("Se forzará en OpenMSX el tipo de mapper " + selectedItem, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     // MessageBox.Show($"Seleccionaste: {selectedItem}");
                 }, true);
-                AddSubMenuItemToolStrip(OpenMSX, "Ejecuta ROM/DSK/CAS", false, clickedItem =>
+                AddSubMenuItemToolStrip(OpenMSX, "Ejecuta ROM/DSK/CAS/WAV", false, clickedItem =>
                 {
                     var dlg = new OpenFileDialog();
-                    dlg.Filter = "Archivos ROM/DSK/CAS (*.rom;*.dsk;*.cas)|*.rom;*.dsk;*.cas|Todos los archivos (*.*)|*.*";
+                    dlg.Filter = "Archivos ROM/DSK/CAS (*.rom;*.dsk;*.cas;*.wav)|*.rom;*.dsk;*.cas;*.wav|Todos los archivos (*.*)|*.*";
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
                         try
@@ -404,6 +405,7 @@ namespace kakarot
                             if (dlg.FileName.ToLower().EndsWith(".dsk")) psi.Arguments = " \"" + dlg.FileName + "\"";
                             if (dlg.FileName.ToLower().EndsWith(".rom")) psi.Arguments = " -cart \"" + dlg.FileName + "\"" + arguments2;
                             if (dlg.FileName.ToLower().EndsWith(".cas")) psi.Arguments = " \"" + dlg.FileName + "\"";
+                            if (dlg.FileName.ToLower().EndsWith(".wav")) psi.Arguments = " \"" + dlg.FileName + "\"";
                             psi.CreateNoWindow = true;
                             psi.WorkingDirectory = PathOpenMSX;
                             var p = Process.Start(psi);
@@ -1464,6 +1466,7 @@ namespace kakarot
         //}
         private void filehunterToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (PathOpenMSX is not null) OpenMSX.Enabled = true;
             webMSXToolStripMenuItem.Enabled = true;
             toolStripComboBox3.Enabled = true;
             verNovedadesToolStripMenuItem.Enabled = true;
@@ -1479,6 +1482,8 @@ namespace kakarot
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
+            /// hay que añadir opcion enable a false del menu open msx si PathOpenMSX is not null
+            if (PathOpenMSX is not null) OpenMSX.Enabled = false;
             if (listBox1.SelectedIndex == -1) listBox1.SelectedIndex = 0;
             toolStripStatusLabel1.Text = "Total de archivos: " + listBox1.Items.Count.ToString();
             webMSXToolStripMenuItem.Enabled = false;
