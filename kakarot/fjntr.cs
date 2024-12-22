@@ -518,69 +518,73 @@ namespace kakarot
         List<string> originalItems = new List<string>();
         private void ApplyFilter(string filterText, object target, DataTable _dataTable = null)
         {
-            if (target == null) return;
-
-            if (target is ListBox listBox)
+            try
             {
+                if (target == null) return;
 
-                // Aplicar el filtro
-                var filteredItems = string.IsNullOrWhiteSpace(filterText)
-                    ? originalItems // Si no hay filtro, mostrar todos los elementos
-                    : originalItems.Where(item => item.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
-
-                // Actualizar los elementos del ListBox
-                listBox.BeginUpdate();
-                listBox.Items.Clear();
-                foreach (var item in filteredItems)
+                if (target is ListBox listBox)
                 {
-                    listBox.Items.Add(item);
-                }
-                listBox.EndUpdate();
 
-                // Actualizar el estado en un ToolStripStatusLabel si es necesario
-                toolStripStatusLabel1.Text = "Total de elementos: " + listBox.Items.Count;
+                    // Aplicar el filtro
+                    var filteredItems = string.IsNullOrWhiteSpace(filterText)
+                        ? originalItems // Si no hay filtro, mostrar todos los elementos
+                        : originalItems.Where(item => item.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+
+                    // Actualizar los elementos del ListBox
+                    listBox.BeginUpdate();
+                    listBox.Items.Clear();
+                    foreach (var item in filteredItems)
+                    {
+                        listBox.Items.Add(item);
+                    }
+                    listBox.EndUpdate();
+
+                    // Actualizar el estado en un ToolStripStatusLabel si es necesario
+                    toolStripStatusLabel1.Text = "Total de elementos: " + listBox.Items.Count;
+                }
+                else if (target is DataGridView dataGridView)
+                {
+                    // Manejar el filtrado en un DataTable asociado a un DataGridView
+                    string columnaAbuscar = "";
+
+                    if (_dataTable == null) return;
+
+                    // Determinar la columna a buscar
+                    if (IsControlVisible(dataGridView1))
+                    {
+                        columnaAbuscar = "FilePath";
+                    }
+                    else if (IsControlVisible(dataGridView2))
+                    {
+                        if (checkBox1.Checked) columnaAbuscar = "Date";
+                        else if (checkBox2.Checked) columnaAbuscar = "Status";
+                        else if (checkBox3.Checked) columnaAbuscar = "Url";
+                    }
+
+                    // Verificar si columnaAbuscar tiene un valor válido
+                    if (string.IsNullOrEmpty(columnaAbuscar))
+                    {
+                        toolStripStatusLabel1.Text = "No se ha seleccionado una columna para aplicar el filtro.";
+                        return;
+                    }
+
+                    // Construir la expresión de filtro
+                    string filterExpression = string.IsNullOrWhiteSpace(filterText)
+                        ? string.Empty
+                        : $"{columnaAbuscar} LIKE '%{filterText.Replace("'", "''")}%'";
+
+                    // Aplicar el filtro
+                    _dataTable.DefaultView.RowFilter = filterExpression;
+
+                    // Actualizar el estado en el ToolStripStatusLabel
+                    toolStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
+                }
+                else
+                {
+                    throw new ArgumentException("El tipo de control no es compatible. Use ListBox o DataGridView.");
+                }
             }
-            else if (target is DataGridView dataGridView)
-            {
-                // Manejar el filtrado en un DataTable asociado a un DataGridView
-                string columnaAbuscar = "";
-
-                if (_dataTable == null) return;
-
-                // Determinar la columna a buscar
-                if (IsControlVisible(dataGridView1))
-                {
-                    columnaAbuscar = "FilePath";
-                }
-                else if (IsControlVisible(dataGridView2))
-                {
-                    if (checkBox1.Checked) columnaAbuscar = "Date";
-                    else if (checkBox2.Checked) columnaAbuscar = "Status";
-                    else if (checkBox3.Checked) columnaAbuscar = "Url";
-                }
-
-                // Verificar si columnaAbuscar tiene un valor válido
-                if (string.IsNullOrEmpty(columnaAbuscar))
-                {
-                    toolStripStatusLabel1.Text = "No se ha seleccionado una columna para aplicar el filtro.";
-                    return;
-                }
-
-                // Construir la expresión de filtro
-                string filterExpression = string.IsNullOrWhiteSpace(filterText)
-                    ? string.Empty
-                    : $"{columnaAbuscar} LIKE '%{filterText.Replace("'", "''")}%'";
-
-                // Aplicar el filtro
-                _dataTable.DefaultView.RowFilter = filterExpression;
-
-                // Actualizar el estado en el ToolStripStatusLabel
-                toolStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
-            }
-            else
-            {
-                throw new ArgumentException("El tipo de control no es compatible. Use ListBox o DataGridView.");
-            }
+            catch (Exception ex) { MessageBox.Show("Ocurrio un error al aplicar el filtro", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); textBox1.Text = ""; }
         }
         public bool IsControlVisible(Control control)
         {
@@ -1593,10 +1597,6 @@ namespace kakarot
                     MessageBox.Show("Error lanzando " + dlg.FileName + "\r\n", "Error");
                 }
             }
-
-
-
-
         }
         private void aplicarParcheIPSToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1619,11 +1619,13 @@ namespace kakarot
                 {
                     elips = dlg.FileName;
                     ips = Path.GetFileName(elips);
+
                 }
                 else { return; }
                 DialogResult dialogResult = MessageBox.Show($"¿Modificar el archivo {rom}\r\nsha1:{elsha}\r\ncon el parche {ips}?", "Atencion", MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.Yes)
                 {
+                    File.Copy(larom, larom.ToLower().Replace(".rom", ".old"));
                     romstream = new FileStream(larom, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
                     ipsstream = new FileStream(elips, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
                     int lint = (int)ipsstream.Length;
@@ -1703,7 +1705,6 @@ namespace kakarot
                 return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToUpperInvariant();
             }
         }
-
         private void verSHA1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var dlg = new OpenFileDialog();
