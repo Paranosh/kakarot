@@ -1598,9 +1598,124 @@ namespace kakarot
 
 
         }
+        private void aplicarParcheIPSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //sacado de https://sneslab.net/wiki/IPS_patching_code
+            try
+            {
+                string larom = "", rom="", elips = "", ips="", elsha = "";
+                FileStream romstream, ipsstream;
+                var dlg = new OpenFileDialog();
+                dlg.Filter = "Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk|Todos los archivos (*.*)|*.*";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    larom = dlg.FileName;
+                    rom= Path.GetFileName(larom);
+                    elsha = ComputeFileSha1(larom);
+                }
+                else { return; }
+                dlg.Filter = "Archivos ips (*.ips)|*.ips|Todos los archivos (*.*)|*.*";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    elips = dlg.FileName;
+                    ips = Path.GetFileName(elips);
+                }
+                else { return; }
+                DialogResult dialogResult = MessageBox.Show($"¿Modificar el archivo {rom}\r\nsha1:{elsha}\r\ncon el parche {ips}?", "Atencion", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
+                {
+                    romstream = new FileStream(larom, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+                    ipsstream = new FileStream(elips, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+                    int lint = (int)ipsstream.Length;
+                    byte[] ipsbyte = new byte[ipsstream.Length];
+                    byte[] rombyte = new byte[romstream.Length];
+                    IAsyncResult romresult;
+                    IAsyncResult ipsresult = ipsstream.BeginRead(ipsbyte, 0, lint, null, null);
+                    ipsstream.EndRead(ipsresult);
+                    int ipson = 5;
+                    int totalrepeats = 0;
+                    int offset = 0;
+                    bool keepgoing = true;
+                    while (keepgoing == true)
+                    {
+                        offset = ipsbyte[ipson] * 0x10000 + ipsbyte[ipson + 1] * 0x100 + ipsbyte[ipson + 2];
+                        ipson++;
+                        ipson++;
+                        ipson++;
+                        if (ipsbyte[ipson] * 256 + ipsbyte[ipson + 1] == 0)
+                        {
+                            ipson++;
+                            ipson++;
+                            totalrepeats = ipsbyte[ipson] * 256 + ipsbyte[ipson + 1];
+                            ipson++;
+                            ipson++;
+                            byte[] repeatbyte = new byte[totalrepeats];
+                            for (int ontime = 0; ontime < totalrepeats; ontime++)
+                                repeatbyte[ontime] = ipsbyte[ipson];
+                            romstream.Seek(offset, SeekOrigin.Begin);
+                            romresult = romstream.BeginWrite(repeatbyte, 0, totalrepeats, null, null);
+                            romstream.EndWrite(romresult);
+                            ipson++;
+                        }
+                        else
+                        {
+                            totalrepeats = ipsbyte[ipson] * 256 + ipsbyte[ipson + 1];
+                            ipson++;
+                            ipson++;
+                            romstream.Seek(offset, SeekOrigin.Begin);
+                            romresult = romstream.BeginWrite(ipsbyte, ipson, totalrepeats, null, null);
+                            romstream.EndWrite(romresult);
+                            ipson = ipson + totalrepeats;
+                        }
+                        if (ipsbyte[ipson] == 69 && ipsbyte[ipson + 1] == 79 && ipsbyte[ipson + 2] == 70)
+                            keepgoing = false;
+                    }
+                    romstream.Close();
+                    ipsstream.Close();
+                    MessageBox.Show("Parche aplicado con exito", "Correcto", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else if (dialogResult == DialogResult.No)
+                {
+                   // MessageBox.Show("Cancelado por el usuario", "Informacion", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }          
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al aplicar el parche: \r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        public static string ComputeFileSha1(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("La ruta del archivo no puede estar vacía.", nameof(filePath));
+            }
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("El archivo especificado no existe.", filePath);
+            }
+
+            using (var sha1 = System.Security.Cryptography.SHA1.Create())
+            using (var fileStream = File.OpenRead(filePath))
+            {
+                var hashBytes = sha1.ComputeHash(fileStream);
+                return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToUpperInvariant();
+            }
+        }
+
+        private void verSHA1ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dlg = new OpenFileDialog();
+            dlg.Filter = "Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk|Todos los archivos (*.*)|*.*";
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                // romname is the original ROM, patchname is the patch to apply
+               MessageBox.Show(ComputeFileSha1(dlg.FileName));
+            }
+        }
     }
 }
-
 
 public class FileData
 {
