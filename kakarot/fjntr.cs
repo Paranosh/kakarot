@@ -413,7 +413,7 @@ namespace kakarot
                             p.WaitForExit();
                             //borraremos el contenido de tmp
                             ClearDirectory(Application.StartupPath + "\\tmp\\");
-                            this.WindowState = FormWindowState.Normal;
+                            NotifyIcon_DoubleClick(sender, e);
                         }
                         catch (IOException)
                         {
