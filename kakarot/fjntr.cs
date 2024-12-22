@@ -8,6 +8,11 @@ using System.IO.Ports;
 using System.IO.Compression;
 using System.Text;
 using System.Reflection;
+using System.Windows.Forms;
+using System.Collections.Generic;
+using System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Security.Policy;
 
 
 namespace kakarot
@@ -21,21 +26,20 @@ namespace kakarot
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Resize += Form1_Resize;
             notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
+            this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
 
         }
-
-
-        String PathOpenMSX, TipoDeMApper;
+        WebBrowser webBrowser = new WebBrowser();
+        Dictionary<string, string> dictionary = new Dictionary<string, string>();
+        string PathOpenMSX, TipoDeMApper;
         private System.Windows.Forms.Timer fadeTimer;
         private float opacityIncrement;
-        private bool fadeIn, permitirVariasInstancias;
+        private bool fadeIn, permitirVariasInstancias, descargando= false;
         private DataTable _dataTableDV1;
         private DataTable _dataTableDV2;
         string listado = "", updatelistado = "", archivosdescargados = "Descargado ";
         List<FileData> fileList, fileListUpdate;
         int ContadorDescargas = 0;
-
-
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
             // Restaurar la ventana al hacer doble clic en el ícono
@@ -43,7 +47,6 @@ namespace kakarot
             this.WindowState = FormWindowState.Normal;
             notifyIcon.Visible = false;
         }
-
         static string FindApplicationInCommonPaths(string appName)
         {
             // Directorios comunes donde se instalan aplicaciones
@@ -82,9 +85,12 @@ namespace kakarot
         }
         private void Form1_Resize(object sender, EventArgs e)
         {
-            // Asegurar que el panel esté siempre en la esquina inferior derecha
+            // Asegurar que el panel de busqueda esté siempre en la esquina inferior derecha
             panel1.Left = this.ClientSize.Width - panel1.Width - 50;  // 10px de margen de la derecha
             panel1.Top = this.ClientSize.Height - panel1.Height - 50; // 10px de margen inferior
+            listBox1.Width = this.ClientSize.Width;
+            listBox1.Height = this.ClientSize.Height-20;
+
             if (this.WindowState == FormWindowState.Minimized)
             {
                 // Mostrar el ícono en la bandeja del sistema
@@ -96,6 +102,7 @@ namespace kakarot
                 // Mostrar un mensaje de notificación
                 notifyIcon.ShowBalloonTip(1000, "Aplicación minimizada", "La aplicación está en la bandeja del sistema.", ToolTipIcon.Info);
             }
+
         }
         private async Task TaskDownloadFile(string Filename, string Uri)
         {
@@ -298,6 +305,8 @@ namespace kakarot
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            webBrowser.Navigate("https://msxscans.file-hunter.com/");
+            ConfigureListBoxAppearance(listBox1);
             if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
             if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
             //iniciacilzamos config...
@@ -432,7 +441,6 @@ namespace kakarot
             var file1DownloadTask2 = TaskDownloadFile("Update-Log.txt", "https://download.file-hunter.com/Update-Log.txt");
 
         }
-
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Return)
@@ -445,8 +453,6 @@ namespace kakarot
                 textBox1.Text = string.Empty;
             }
         }
-
-
         private void BindDataToDataGridView(List<FileData> _data, DataGridView _dvControl)
         {
             // IEnumerable<FileData> data = _data;
@@ -480,7 +486,6 @@ namespace kakarot
             // Configurar evento de filtrado en tiempo real
             if (IsControlVisible(dataGridView1))
             {
-                textBox1.TextChanged += (sender, e) => ApplyFilter(textBox1.Text, _dataTableDV1);
                 label1.Visible = true;
                 checkBox1.Visible = false;
                 checkBox2.Visible = false;
@@ -488,34 +493,80 @@ namespace kakarot
             }
             if (IsControlVisible(dataGridView2))
             {
-                textBox1.TextChanged += (sender, e) => ApplyFilter(textBox1.Text, _dataTableDV2);
                 label1.Visible = false;
                 checkBox1.Visible = true;
                 checkBox2.Visible = true;
                 checkBox3.Visible = true;
             }
-        }
 
-        private void ApplyFilter(string filterText, DataTable _dataTable)
+        }
+        List<string> originalItems = new List<string>();
+        private void ApplyFilter(string filterText, object target, DataTable _dataTable = null)
         {
-            string columnaAbuscar = "";
-            if (_dataTable == null) return;
-            if (IsControlVisible(dataGridView1)) columnaAbuscar = "FilePath";
-            if (IsControlVisible(dataGridView2))
+            if (target == null) return;
+            
+            if (target is ListBox listBox)
             {
-                if (checkBox1.Checked) columnaAbuscar = "Date";
-                if (checkBox2.Checked) columnaAbuscar = "Status";
-                if (checkBox3.Checked) columnaAbuscar = "Url";
+               
+                // Aplicar el filtro
+                var filteredItems = string.IsNullOrWhiteSpace(filterText)
+                    ? originalItems // Si no hay filtro, mostrar todos los elementos
+                    : originalItems.Where(item => item.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
 
+                // Actualizar los elementos del ListBox
+                listBox.BeginUpdate();
+                listBox.Items.Clear();
+                foreach (var item in filteredItems)
+                {
+                    listBox.Items.Add(item);
+                }
+                listBox.EndUpdate();
+
+                // Actualizar el estado en un ToolStripStatusLabel si es necesario
+              toolStripStatusLabel1.Text = "Total de elementos: " + listBox.Items.Count;
             }
-            string filterExpression = string.IsNullOrWhiteSpace(filterText)
-        ? string.Empty
-         : $"{columnaAbuscar} LIKE '%{filterText.Replace("'", "''")}%'";
+            else if (target is DataGridView dataGridView)
+            {
+                // Manejar el filtrado en un DataTable asociado a un DataGridView
+                string columnaAbuscar = "";
 
-            (_dataTable.DefaultView).RowFilter = filterExpression;
-            toolStripStatusLabel1.Text = "Total de archivos: " + (_dataTable.DefaultView).Count.ToString();
+                if (_dataTable == null) return;
+
+                // Determinar la columna a buscar
+                if (IsControlVisible(dataGridView1))
+                {
+                    columnaAbuscar = "FilePath";
+                }
+                else if (IsControlVisible(dataGridView2))
+                {
+                    if (checkBox1.Checked) columnaAbuscar = "Date";
+                    else if (checkBox2.Checked) columnaAbuscar = "Status";
+                    else if (checkBox3.Checked) columnaAbuscar = "Url";
+                }
+
+                // Verificar si columnaAbuscar tiene un valor válido
+                if (string.IsNullOrEmpty(columnaAbuscar))
+                {
+                    toolStripStatusLabel1.Text = "No se ha seleccionado una columna para aplicar el filtro.";
+                    return;
+                }
+
+                // Construir la expresión de filtro
+                string filterExpression = string.IsNullOrWhiteSpace(filterText)
+                    ? string.Empty
+                    : $"{columnaAbuscar} LIKE '%{filterText.Replace("'", "''")}%'";
+
+                // Aplicar el filtro
+                _dataTable.DefaultView.RowFilter = filterExpression;
+
+                // Actualizar el estado en el ToolStripStatusLabel
+                toolStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
+            }
+            else
+            {
+                throw new ArgumentException("El tipo de control no es compatible. Use ListBox o DataGridView.");
+            }
         }
-
         public bool IsControlVisible(Control control)
         {
             if (!control.Visible)
@@ -534,8 +585,6 @@ namespace kakarot
             Screen screen = Screen.FromControl(control);
             return screen.WorkingArea.IntersectsWith(controlBounds);
         }
-
-
         private void ConfigureDataGridViewAppearance(DataGridView _dgView)
         {
             _dgView.SuspendLayout();
@@ -583,7 +632,57 @@ namespace kakarot
             _dgView.ResumeLayout();
         }
 
+        private void ConfigureListBoxAppearance(ListBox listBox)
+        {
+            // Configuración general
+            listBox.BorderStyle = BorderStyle.Fixed3D;
+            listBox.BackColor = Color.DarkGray;//.Beige;
+            listBox.ForeColor = Color.Black;
+            listBox.Font = new Font("Arial", 10F, FontStyle.Regular);
 
+            // Selección múltiple
+            listBox.SelectionMode = SelectionMode.MultiExtended;
+
+            // Habilitar dibujo personalizado
+            listBox.DrawMode = DrawMode.OwnerDrawFixed;
+            listBox.ItemHeight = 22; // Altura fija para cada elemento
+
+            listBox.DrawItem += (sender, e) =>
+            {
+                if (e.Index < 0) return;
+
+                // Determinar si el elemento está seleccionado
+                bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+
+                // Colores de fondo y texto
+                Color backgroundColor = isSelected ? Color.Peru : (e.Index % 2 == 0 ? Color.Wheat : Color.Moccasin);
+                Color textColor = isSelected ? Color.White : Color.Black;
+
+                // Dibujar fondo
+                e.Graphics.FillRectangle(new SolidBrush(backgroundColor), e.Bounds);
+
+                // Calcular la posición del texto para centrarlo verticalmente
+                string text = listBox.Items[e.Index].ToString();
+                SizeF textSize = e.Graphics.MeasureString(text, e.Font);
+                float textY = e.Bounds.Y + (e.Bounds.Height - textSize.Height) / 2;
+
+                // Dibujar texto del elemento
+                e.Graphics.DrawString(
+                    text,
+                    e.Font,
+                    new SolidBrush(textColor),
+                    new PointF(e.Bounds.X + 5, textY) // Texto alineado a la izquierda con un margen
+                );
+
+                // Dibujar línea negra horizontal (similar a las líneas de un DataGridView)
+                using (Pen linePen = new Pen(Color.Black, 1))
+                {
+                    e.Graphics.DrawLine(linePen, e.Bounds.Left, e.Bounds.Bottom - 1, e.Bounds.Right, e.Bounds.Bottom - 1);
+                }
+
+                e.DrawFocusRectangle();
+            };
+        }
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             //    pictureBox1.Visible = false;
@@ -739,25 +838,22 @@ namespace kakarot
                     TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
                 }
             }
-
+            if (IsControlVisible(listBox1))
+            {
+                if (listBox1.SelectedItem != null) 
+                {
+                    listBox1_DoubleClick(sender, e);
+                }
+            }
         }
         private async Task TaskDownloadFileArchivos(string Filename, string Uri, bool runInOpenMSX)
         {
-
             WebClient client = new WebClient();
-
-
-
             client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
-
-
             //var eventHandler = new AsyncCompletedEventHandler(DownloadFileCompletedArchivos(Filename, runInOpenMSX));
             // eventHandler.Invoke(null, new AsyncCompletedEventArgs(null, false, new Exception("404: Not Found")));
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => DownloadProgressCallbackArchivos(Filename, sender, e));
             await client.DownloadFileTaskAsync(Uri, Filename);
-
-
-
         }
         /// <summary>
         /// Busca archivos recursivamente en un directorio y sus subdirectorios con extensiones específicas.
@@ -955,7 +1051,6 @@ namespace kakarot
                     }
                     archivosdescargados += filename + " ";
                     toolStripStatusLabel1.Text = archivosdescargados;
-
                 }
 
 
@@ -963,21 +1058,6 @@ namespace kakarot
 
             return new AsyncCompletedEventHandler(action);
 
-            //catch (WebException ex)
-            //{
-            //    MessageBox.Show("Ocurrio un error al descargar el archivo:\r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    throw;
-            //}
-            //catch (InvalidOperationException)
-            //{
-            //    MessageBox.Show("Ocurrio un error al guardar el archivo:", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    throw;
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show("Ocurrio un error al descargar el archivo:\r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //}
-            //return null;
         }
         /// <summary>
         /// Borra el contenido de un directorio, incluyendo archivos y subdirectorios.
@@ -1004,13 +1084,14 @@ namespace kakarot
         private void DownloadProgressCallbackArchivos(string nombreArchivo, object sender, DownloadProgressChangedEventArgs e)
         {
             // Ejemplo: mostrar progreso y nombre de archivo
-            toolStripStatusLabel1.Text = "Descargando " + nombreArchivo + " " + e.ProgressPercentage + "% de ( " + e.BytesReceived + " / " + e.TotalBytesToReceive + ")";
+            //this.Focus();
+           toolStripStatusLabel1.Text = "Descargando " + nombreArchivo + " " + e.ProgressPercentage + "% de ( " + e.BytesReceived + " / " + e.TotalBytesToReceive + ")";
         }
         private readonly static string reservedCharacters = "!*'();:@&=+$,?%#[]";
         public static string UrlEncode(string value)
         {
-            if (String.IsNullOrEmpty(value))
-                return String.Empty;
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
 
             var sb = new StringBuilder();
 
@@ -1081,7 +1162,7 @@ namespace kakarot
 
         private void fjntr_FormClosing(object sender, FormClosingEventArgs e)
         {
-
+            ClearDirectory(Application.StartupPath + "\\tmp\\");
         }
 
         private static void ExtractEmbeddedResource(string resourceName, string outputPath)
@@ -1188,7 +1269,7 @@ namespace kakarot
                     var path = openFileDialog1.FileName;
                     var solonombre = openFileDialog1.SafeFileName.ToLower();
                     File.Copy(path, Application.StartupPath + "\\tmp\\" + solonombre, true);
-                    
+
                     var prevWorking = Environment.CurrentDirectory;
                     Directory.SetCurrentDirectory(Application.StartupPath + "\\tmp");
                     using (Process process = new Process())
@@ -1207,7 +1288,8 @@ namespace kakarot
                         using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
                         using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
                         {
-                            process.OutputDataReceived += (ssender, ee) => {
+                            process.OutputDataReceived += (ssender, ee) =>
+                            {
                                 if (ee.Data == null)
                                 {
                                     outputWaitHandle.Set();
@@ -1271,6 +1353,170 @@ namespace kakarot
                 MessageBox.Show(ex.Message, "Error");
             }
             ClearDirectory(Application.StartupPath + "\\tmp\\");
+        }
+        private void webBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        {
+            listBox1.Items.Clear();
+            dictionary.Clear();
+            string latabla = "", elrow = "", lacell = "";
+            HtmlElementCollection tables = this.webBrowser.Document.GetElementsByTagName("tr");
+            foreach (HtmlElement TBL in tables)
+            {
+                latabla = TBL.InnerText;
+                foreach (HtmlElement ROW in TBL.All)
+                {
+                    elrow = ROW.InnerText;
+                    foreach (HtmlElement CELL in ROW.All)
+                    {
+
+                        lacell = CELL.InnerText;
+                        if (CELL.GetAttribute("href").Trim() != "")
+                        {
+                            dictionary.Add(latabla, CELL.GetAttribute("href"));
+                        }
+                    }
+                }
+            }
+            foreach (KeyValuePair<string, string> entry in dictionary)
+            {
+                listBox1.Items.Add(entry.Key);
+            }
+            toolStripStatusLabel1.Text = "Total de archivos: " + listBox1.Items.Count.ToString();
+            originalItems.Clear();  
+            foreach (var item in listBox1.Items)
+            {
+                originalItems.Add(item.ToString());
+            }
+        }
+
+        private void listBox1_DoubleClick(object sender, EventArgs e)
+        {
+            foreach (KeyValuePair<string, string> entry in dictionary)
+            {
+                if (entry.Key == listBox1.SelectedItem.ToString())
+                {
+                    if (listBox1.SelectedItem.ToString().Contains("Directory"))
+                    {
+                        //Directorio
+                        webBrowser.Navigate(entry.Value);
+                        break;
+                    }
+                    else
+                    {
+                        using (var fbd = new FolderBrowserDialog())
+                        {
+                            DialogResult result = fbd.ShowDialog();
+                            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                            {
+                                toolStripStatusLabel1.Text = "Descargando, por favor espere.";
+                                string folder = fbd.SelectedPath;
+                                string url = entry.Value;
+                                string fileName = entry.Key.Substring(0, entry.Key.IndexOf(entry.Key.Substring(entry.Key.Length - 4, 3).Trim()) + 3);
+                                string tempfile = Path.GetTempFileName();
+                                string DestFolfer = folder + "\\" + fileName.Substring(0, fileName.Length - 4);
+                                if (Directory.Exists(DestFolfer))
+                                {
+                                    DialogResult dialogResult = MessageBox.Show("El directorio de destino ya existe, si pulsa \"SI\" se borrará todo, incluyendo su contenido, ¿esta seguro?", "Advertencia", MessageBoxButtons.YesNo);
+                                    if (dialogResult == DialogResult.Yes)
+                                    {
+                                        //   Directory.Delete(DestFolfer, true);
+
+                                    }
+                                    else if (dialogResult == DialogResult.No)
+                                    {
+                                        MessageBox.Show("Cancelado");
+                                        return;
+
+                                    }
+                                }
+                                TaskDownloadFileArchivos(folder + "\\" + fileName, url, false);
+                              
+                            }
+                        }
+
+
+                    }
+                }
+
+            }
+        }
+        //private void DownloadFile(string url, string tempfile)
+        //{
+        //    try
+        //    {
+        //        toolStripStatusLabel1.Text = "Descargando --> " + url;
+        //        Thread.Sleep(250);
+        //        WebClient Client = new WebClient();
+        //        Client.DownloadFile(url, tempfile);
+        //        Client.DownloadFileAsync += (o, args) => MethodToUpdateControlDownloadFile(tempfile, DestFolfer, fileName);
+        //    }
+        //    catch (Exception Ex)
+        //    {
+        //        toolStripStatusLabel1.Text = "Error descargando " + url;
+        //        descargando = false;
+               
+        //    }
+        //}
+        //private void MethodToUpdateControlDownloadFile(string TempFile, string DestFolfer, string filename)
+        //{
+        //    toolStripStatusLabel1.Text = "Descargado con exito --> " + filename;
+
+        //}
+        private void filehunterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            webMSXToolStripMenuItem.Enabled = true;
+            toolStripComboBox3.Enabled = true;
+            verNovedadesToolStripMenuItem.Enabled = true;
+            toolStripMenuItem4.Checked = false;
+            filehunterToolStripMenuItem.Checked = true;
+            listBox1.Visible = false;
+            dataGridView1.BringToFront();
+            dataGridView1.Visible = true;
+            panel1.BringToFront();
+            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString();
+
+        }
+
+        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedIndex == -1) listBox1.SelectedIndex = 0;
+            toolStripStatusLabel1.Text = "Total de archivos: " + listBox1.Items.Count.ToString();
+            webMSXToolStripMenuItem.Enabled = false;
+            toolStripComboBox3.Enabled = false;
+            verNovedadesToolStripMenuItem.Enabled = false;
+            filehunterToolStripMenuItem.Checked = false;
+            toolStripMenuItem4.Checked = true;
+            dataGridView1.Visible = false;
+            listBox1.BringToFront();
+            panel1.BringToFront();
+            listBox1.Visible = true;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            // Configurar evento de filtrado en tiempo real
+            if (IsControlVisible(dataGridView1))
+            {
+                ApplyFilter(textBox1.Text, dataGridView1, _dataTableDV1);
+                label1.Visible = true;
+                checkBox1.Visible = false;
+                checkBox2.Visible = false;
+                checkBox3.Visible = false;
+            }
+            if (IsControlVisible(dataGridView2))
+            {
+                ApplyFilter(textBox1.Text, dataGridView1, _dataTableDV2);
+                label1.Visible = false;
+                checkBox1.Visible = true;
+                checkBox2.Visible = true;
+                checkBox3.Visible = true;
+            }
+            if (IsControlVisible(listBox1))
+            {
+                ApplyFilter(textBox1.Text, listBox1);
+            }
+
+           
         }
     }
 }

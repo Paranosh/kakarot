@@ -41,12 +41,14 @@
             herramientasToolStripMenuItem = new ToolStripMenuItem();
             convertirAToolStripMenuItem = new ToolStripMenuItem();
             dSKROMToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem3 = new ToolStripMenuItem();
             toolStripMenuItem2 = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             reposToolStripMenuItem = new ToolStripMenuItem();
             filehunterToolStripMenuItem = new ToolStripMenuItem();
             verNovedadesToolStripMenuItem = new ToolStripMenuItem();
             toolStripComboBox3 = new ToolStripComboBox();
+            toolStripMenuItem4 = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             webMSXToolStripMenuItem = new ToolStripMenuItem();
             descargarSeleccionToolStripMenuItem = new ToolStripMenuItem();
@@ -64,7 +66,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             statusStrip1 = new StatusStrip();
             notifyIcon = new NotifyIcon(components);
-            toolStripMenuItem3 = new ToolStripMenuItem();
+            listBox1 = new ListBox();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             contextMenuStrip1.SuspendLayout();
@@ -140,6 +142,7 @@
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(235, 23);
             textBox1.TabIndex = 0;
+            textBox1.TextChanged += textBox1_TextChanged;
             textBox1.KeyDown += textBox1_KeyDown;
             // 
             // dataGridView1
@@ -155,7 +158,7 @@
             dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
             dataGridView1.RowHeadersWidth = 62;
-            dataGridView1.Size = new Size(864, 571);
+            dataGridView1.Size = new Size(864, 581);
             dataGridView1.TabIndex = 8;
             dataGridView1.CellClick += dataGridView1_CellClick;
             dataGridView1.SelectionChanged += dataGridView1_SelectionChanged;
@@ -165,54 +168,65 @@
             contextMenuStrip1.ImageScalingSize = new Size(24, 24);
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] { herramientasToolStripMenuItem, toolStripSeparator3, reposToolStripMenuItem, toolStripSeparator1, webMSXToolStripMenuItem, descargarSeleccionToolStripMenuItem, enviarAMsxToolStripMenuItem, toolStripSeparator4, opcionesToolStripMenuItem, toolStripSeparator2, buscarToolStripMenuItem1 });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(181, 204);
+            contextMenuStrip1.Size = new Size(179, 182);
             // 
             // herramientasToolStripMenuItem
             // 
             herramientasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { convertirAToolStripMenuItem, toolStripMenuItem2 });
             herramientasToolStripMenuItem.Name = "herramientasToolStripMenuItem";
-            herramientasToolStripMenuItem.Size = new Size(180, 22);
+            herramientasToolStripMenuItem.Size = new Size(178, 22);
             herramientasToolStripMenuItem.Text = "Herramientas";
             // 
             // convertirAToolStripMenuItem
             // 
             convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem, toolStripMenuItem3 });
             convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
-            convertirAToolStripMenuItem.Size = new Size(180, 22);
+            convertirAToolStripMenuItem.Size = new Size(138, 22);
             convertirAToolStripMenuItem.Text = "Convertir a..";
             // 
             // dSKROMToolStripMenuItem
             // 
             dSKROMToolStripMenuItem.Name = "dSKROMToolStripMenuItem";
-            dSKROMToolStripMenuItem.Size = new Size(180, 22);
+            dSKROMToolStripMenuItem.Size = new Size(142, 22);
             dSKROMToolStripMenuItem.Text = "DSK -> ROM";
             dSKROMToolStripMenuItem.Click += dSKROMToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItem3
+            // 
+            toolStripMenuItem3.Name = "toolStripMenuItem3";
+            toolStripMenuItem3.Size = new Size(142, 22);
+            toolStripMenuItem3.Text = "BAS -> ASCII";
+            toolStripMenuItem3.Click += toolStripMenuItem3_Click;
             // 
             // toolStripMenuItem2
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(180, 22);
+            toolStripMenuItem2.Size = new Size(138, 22);
             toolStripMenuItem2.Text = "Concatenar";
             toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(177, 6);
+            toolStripSeparator3.Size = new Size(175, 6);
             // 
             // reposToolStripMenuItem
             // 
-            reposToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filehunterToolStripMenuItem });
+            reposToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filehunterToolStripMenuItem, toolStripMenuItem4 });
             reposToolStripMenuItem.Name = "reposToolStripMenuItem";
-            reposToolStripMenuItem.Size = new Size(180, 22);
+            reposToolStripMenuItem.Size = new Size(178, 22);
             reposToolStripMenuItem.Text = "Repos";
             // 
             // filehunterToolStripMenuItem
             // 
+            filehunterToolStripMenuItem.Checked = true;
+            filehunterToolStripMenuItem.CheckOnClick = true;
+            filehunterToolStripMenuItem.CheckState = CheckState.Checked;
             filehunterToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { verNovedadesToolStripMenuItem, toolStripComboBox3 });
             filehunterToolStripMenuItem.Name = "filehunterToolStripMenuItem";
-            filehunterToolStripMenuItem.Size = new Size(132, 22);
+            filehunterToolStripMenuItem.Size = new Size(133, 22);
             filehunterToolStripMenuItem.Text = "File-hunter";
+            filehunterToolStripMenuItem.Click += filehunterToolStripMenuItem_Click;
             // 
             // verNovedadesToolStripMenuItem
             // 
@@ -230,22 +244,30 @@
             toolStripComboBox3.Size = new Size(121, 23);
             toolStripComboBox3.SelectedIndexChanged += toolStripComboBox3_SelectedIndexChanged;
             // 
+            // toolStripMenuItem4
+            // 
+            toolStripMenuItem4.CheckOnClick = true;
+            toolStripMenuItem4.Name = "toolStripMenuItem4";
+            toolStripMenuItem4.Size = new Size(133, 22);
+            toolStripMenuItem4.Text = "MSX-Scans";
+            toolStripMenuItem4.Click += toolStripMenuItem4_Click;
+            // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(177, 6);
+            toolStripSeparator1.Size = new Size(175, 6);
             // 
             // webMSXToolStripMenuItem
             // 
             webMSXToolStripMenuItem.Name = "webMSXToolStripMenuItem";
-            webMSXToolStripMenuItem.Size = new Size(180, 22);
+            webMSXToolStripMenuItem.Size = new Size(178, 22);
             webMSXToolStripMenuItem.Text = "WebMSX";
             webMSXToolStripMenuItem.Click += webMSXToolStripMenuItem_Click;
             // 
             // descargarSeleccionToolStripMenuItem
             // 
             descargarSeleccionToolStripMenuItem.Name = "descargarSeleccionToolStripMenuItem";
-            descargarSeleccionToolStripMenuItem.Size = new Size(180, 22);
+            descargarSeleccionToolStripMenuItem.Size = new Size(178, 22);
             descargarSeleccionToolStripMenuItem.Text = "Descargar seleccion";
             descargarSeleccionToolStripMenuItem.Click += descargarSeleccionToolStripMenuItem_Click;
             // 
@@ -253,7 +275,7 @@
             // 
             enviarAMsxToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripComboBox1, baudrateToolStripMenuItem });
             enviarAMsxToolStripMenuItem.Name = "enviarAMsxToolStripMenuItem";
-            enviarAMsxToolStripMenuItem.Size = new Size(180, 22);
+            enviarAMsxToolStripMenuItem.Size = new Size(178, 22);
             enviarAMsxToolStripMenuItem.Text = "Enviar a MSX";
             // 
             // toolStripComboBox1
@@ -271,13 +293,13 @@
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(177, 6);
+            toolStripSeparator4.Size = new Size(175, 6);
             // 
             // opcionesToolStripMenuItem
             // 
             opcionesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { descomprimirDespuesDeDescargarToolStripMenuItem, toolStripMenuItem1, permitirMultiplesInstanciasToolStripMenuItem });
             opcionesToolStripMenuItem.Name = "opcionesToolStripMenuItem";
-            opcionesToolStripMenuItem.Size = new Size(180, 22);
+            opcionesToolStripMenuItem.Size = new Size(178, 22);
             opcionesToolStripMenuItem.Text = "Opciones";
             // 
             // descomprimirDespuesDeDescargarToolStripMenuItem
@@ -306,13 +328,13 @@
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(177, 6);
+            toolStripSeparator2.Size = new Size(175, 6);
             // 
             // buscarToolStripMenuItem1
             // 
             buscarToolStripMenuItem1.CheckOnClick = true;
             buscarToolStripMenuItem1.Name = "buscarToolStripMenuItem1";
-            buscarToolStripMenuItem1.Size = new Size(180, 22);
+            buscarToolStripMenuItem1.Size = new Size(178, 22);
             buscarToolStripMenuItem1.Text = "Buscar";
             buscarToolStripMenuItem1.CheckedChanged += buscarToolStripMenuItem1_CheckedChanged;
             // 
@@ -332,7 +354,7 @@
             dataGridView2.RowHeadersVisible = false;
             dataGridView2.RowHeadersWidth = 62;
             dataGridView2.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView2.Size = new Size(864, 571);
+            dataGridView2.Size = new Size(864, 581);
             dataGridView2.TabIndex = 9;
             dataGridView2.Visible = false;
             dataGridView2.SelectionChanged += dataGridView2_SelectionChanged;
@@ -348,7 +370,7 @@
             // 
             statusStrip1.ImageScalingSize = new Size(24, 24);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
-            statusStrip1.Location = new Point(0, 549);
+            statusStrip1.Location = new Point(0, 559);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(864, 22);
             statusStrip1.TabIndex = 3;
@@ -360,18 +382,25 @@
             notifyIcon.Text = "Kakarot";
             notifyIcon.Visible = true;
             // 
-            // toolStripMenuItem3
+            // listBox1
             // 
-            toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(180, 22);
-            toolStripMenuItem3.Text = "BAS -> ASCII";
-            toolStripMenuItem3.Click += toolStripMenuItem3_Click;
+            listBox1.BackColor = SystemColors.ControlDark;
+            listBox1.ContextMenuStrip = contextMenuStrip1;
+            listBox1.FormattingEnabled = true;
+            listBox1.ItemHeight = 15;
+            listBox1.Location = new Point(0, 0);
+            listBox1.Name = "listBox1";
+            listBox1.Size = new Size(864, 559);
+            listBox1.TabIndex = 10;
+            listBox1.Visible = false;
+            listBox1.DoubleClick += listBox1_DoubleClick;
             // 
             // fjntr
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(864, 571);
+            ClientSize = new Size(864, 581);
+            Controls.Add(listBox1);
             Controls.Add(panel1);
             Controls.Add(statusStrip1);
             Controls.Add(dataGridView1);
@@ -428,5 +457,8 @@
         private ToolStripMenuItem toolStripMenuItem2;
         private ToolStripMenuItem permitirMultiplesInstanciasToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem3;
+        private DataGridView dataGridView3;
+        private ListBox listBox1;
+        private ToolStripMenuItem toolStripMenuItem4;
     }
 }
