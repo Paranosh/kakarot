@@ -39,18 +39,19 @@
             dataGridView1 = new DataGridView();
             contextMenuStrip1 = new ContextMenuStrip(components);
             herramientasToolStripMenuItem = new ToolStripMenuItem();
+            convertirAToolStripMenuItem = new ToolStripMenuItem();
+            dSKROMToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem3 = new ToolStripMenuItem();
+            rOMCASToolStripMenuItem = new ToolStripMenuItem();
+            dragDropdskExploresrToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem2 = new ToolStripMenuItem();
+            aplicarParcheIPSToolStripMenuItem = new ToolStripMenuItem();
+            verSHA1ToolStripMenuItem = new ToolStripMenuItem();
             EnviarAMSXMenuItem = new ToolStripMenuItem();
             toolStripComboBox2 = new ToolStripComboBox();
             toolStripComboBox4 = new ToolStripComboBox();
             enviaArchivoSeleccionadoToolStripMenuItem = new ToolStripMenuItem();
             enviaArchivoLocalToolStripMenuItem = new ToolStripMenuItem();
-            convertirAToolStripMenuItem = new ToolStripMenuItem();
-            dSKROMToolStripMenuItem = new ToolStripMenuItem();
-            toolStripMenuItem3 = new ToolStripMenuItem();
-            rOMCASToolStripMenuItem = new ToolStripMenuItem();
-            toolStripMenuItem2 = new ToolStripMenuItem();
-            aplicarParcheIPSToolStripMenuItem = new ToolStripMenuItem();
-            verSHA1ToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             reposToolStripMenuItem = new ToolStripMenuItem();
             filehunterToolStripMenuItem = new ToolStripMenuItem();
@@ -174,14 +175,70 @@
             contextMenuStrip1.ImageScalingSize = new Size(24, 24);
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] { herramientasToolStripMenuItem, toolStripSeparator3, reposToolStripMenuItem, toolStripSeparator1, webMSXToolStripMenuItem, descargarSeleccionToolStripMenuItem, toolStripSeparator4, opcionesToolStripMenuItem, toolStripSeparator2, buscarToolStripMenuItem1 });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(181, 182);
+            contextMenuStrip1.Size = new Size(179, 160);
             // 
             // herramientasToolStripMenuItem
             // 
-            herramientasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { EnviarAMSXMenuItem, convertirAToolStripMenuItem, toolStripMenuItem2, aplicarParcheIPSToolStripMenuItem, verSHA1ToolStripMenuItem });
+            herramientasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { convertirAToolStripMenuItem, dragDropdskExploresrToolStripMenuItem, aplicarParcheIPSToolStripMenuItem, toolStripMenuItem2, verSHA1ToolStripMenuItem, EnviarAMSXMenuItem });
             herramientasToolStripMenuItem.Name = "herramientasToolStripMenuItem";
-            herramientasToolStripMenuItem.Size = new Size(180, 22);
+            herramientasToolStripMenuItem.Size = new Size(178, 22);
             herramientasToolStripMenuItem.Text = "Herramientas";
+            // 
+            // convertirAToolStripMenuItem
+            // 
+            convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem, toolStripMenuItem3, rOMCASToolStripMenuItem });
+            convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
+            convertirAToolStripMenuItem.Size = new Size(180, 22);
+            convertirAToolStripMenuItem.Text = "Convertir a..";
+            // 
+            // dSKROMToolStripMenuItem
+            // 
+            dSKROMToolStripMenuItem.Name = "dSKROMToolStripMenuItem";
+            dSKROMToolStripMenuItem.Size = new Size(142, 22);
+            dSKROMToolStripMenuItem.Text = "DSK -> ROM";
+            dSKROMToolStripMenuItem.Click += dSKROMToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItem3
+            // 
+            toolStripMenuItem3.Name = "toolStripMenuItem3";
+            toolStripMenuItem3.Size = new Size(142, 22);
+            toolStripMenuItem3.Text = "BAS -> ASCII";
+            toolStripMenuItem3.Click += toolStripMenuItem3_Click;
+            // 
+            // rOMCASToolStripMenuItem
+            // 
+            rOMCASToolStripMenuItem.Name = "rOMCASToolStripMenuItem";
+            rOMCASToolStripMenuItem.Size = new Size(142, 22);
+            rOMCASToolStripMenuItem.Text = "ROM -> CAS";
+            rOMCASToolStripMenuItem.Click += rOMCASToolStripMenuItem_Click;
+            // 
+            // dragDropdskExploresrToolStripMenuItem
+            // 
+            dragDropdskExploresrToolStripMenuItem.Name = "dragDropdskExploresrToolStripMenuItem";
+            dragDropdskExploresrToolStripMenuItem.Size = new Size(180, 22);
+            dragDropdskExploresrToolStripMenuItem.Text = "DragDrop .DSK Ex";
+            dragDropdskExploresrToolStripMenuItem.Click += dragDropdskExploresrToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItem2
+            // 
+            toolStripMenuItem2.Name = "toolStripMenuItem2";
+            toolStripMenuItem2.Size = new Size(180, 22);
+            toolStripMenuItem2.Text = "Concatenar";
+            toolStripMenuItem2.Click += toolStripMenuItem2_Click;
+            // 
+            // aplicarParcheIPSToolStripMenuItem
+            // 
+            aplicarParcheIPSToolStripMenuItem.Name = "aplicarParcheIPSToolStripMenuItem";
+            aplicarParcheIPSToolStripMenuItem.Size = new Size(180, 22);
+            aplicarParcheIPSToolStripMenuItem.Text = "Parchear ROM (IPS)";
+            aplicarParcheIPSToolStripMenuItem.Click += aplicarParcheIPSToolStripMenuItem_Click;
+            // 
+            // verSHA1ToolStripMenuItem
+            // 
+            verSHA1ToolStripMenuItem.Name = "verSHA1ToolStripMenuItem";
+            verSHA1ToolStripMenuItem.Size = new Size(180, 22);
+            verSHA1ToolStripMenuItem.Text = "SHA1";
+            verSHA1ToolStripMenuItem.Click += verSHA1ToolStripMenuItem_Click;
             // 
             // EnviarAMSXMenuItem
             // 
@@ -218,65 +275,16 @@
             enviaArchivoLocalToolStripMenuItem.Text = "Envia archivo local";
             enviaArchivoLocalToolStripMenuItem.Click += enviaArchivoLocalToolStripMenuItem_Click;
             // 
-            // convertirAToolStripMenuItem
-            // 
-            convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem, toolStripMenuItem3, rOMCASToolStripMenuItem });
-            convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
-            convertirAToolStripMenuItem.Size = new Size(180, 22);
-            convertirAToolStripMenuItem.Text = "Convertir a..";
-            // 
-            // dSKROMToolStripMenuItem
-            // 
-            dSKROMToolStripMenuItem.Name = "dSKROMToolStripMenuItem";
-            dSKROMToolStripMenuItem.Size = new Size(142, 22);
-            dSKROMToolStripMenuItem.Text = "DSK -> ROM";
-            dSKROMToolStripMenuItem.Click += dSKROMToolStripMenuItem_Click;
-            // 
-            // toolStripMenuItem3
-            // 
-            toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(142, 22);
-            toolStripMenuItem3.Text = "BAS -> ASCII";
-            toolStripMenuItem3.Click += toolStripMenuItem3_Click;
-            // 
-            // rOMCASToolStripMenuItem
-            // 
-            rOMCASToolStripMenuItem.Name = "rOMCASToolStripMenuItem";
-            rOMCASToolStripMenuItem.Size = new Size(142, 22);
-            rOMCASToolStripMenuItem.Text = "ROM -> CAS";
-            rOMCASToolStripMenuItem.Click += rOMCASToolStripMenuItem_Click;
-            // 
-            // toolStripMenuItem2
-            // 
-            toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(180, 22);
-            toolStripMenuItem2.Text = "Concatenar";
-            toolStripMenuItem2.Click += toolStripMenuItem2_Click;
-            // 
-            // aplicarParcheIPSToolStripMenuItem
-            // 
-            aplicarParcheIPSToolStripMenuItem.Name = "aplicarParcheIPSToolStripMenuItem";
-            aplicarParcheIPSToolStripMenuItem.Size = new Size(180, 22);
-            aplicarParcheIPSToolStripMenuItem.Text = "Aplicar parche IPS";
-            aplicarParcheIPSToolStripMenuItem.Click += aplicarParcheIPSToolStripMenuItem_Click;
-            // 
-            // verSHA1ToolStripMenuItem
-            // 
-            verSHA1ToolStripMenuItem.Name = "verSHA1ToolStripMenuItem";
-            verSHA1ToolStripMenuItem.Size = new Size(180, 22);
-            verSHA1ToolStripMenuItem.Text = "SHA1";
-            verSHA1ToolStripMenuItem.Click += verSHA1ToolStripMenuItem_Click;
-            // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(177, 6);
+            toolStripSeparator3.Size = new Size(175, 6);
             // 
             // reposToolStripMenuItem
             // 
             reposToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filehunterToolStripMenuItem, toolStripMenuItem4 });
             reposToolStripMenuItem.Name = "reposToolStripMenuItem";
-            reposToolStripMenuItem.Size = new Size(180, 22);
+            reposToolStripMenuItem.Size = new Size(178, 22);
             reposToolStripMenuItem.Text = "Repos";
             // 
             // filehunterToolStripMenuItem
@@ -325,32 +333,32 @@
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(177, 6);
+            toolStripSeparator1.Size = new Size(175, 6);
             // 
             // webMSXToolStripMenuItem
             // 
             webMSXToolStripMenuItem.Name = "webMSXToolStripMenuItem";
-            webMSXToolStripMenuItem.Size = new Size(180, 22);
+            webMSXToolStripMenuItem.Size = new Size(178, 22);
             webMSXToolStripMenuItem.Text = "WebMSX";
             webMSXToolStripMenuItem.Click += webMSXToolStripMenuItem_Click;
             // 
             // descargarSeleccionToolStripMenuItem
             // 
             descargarSeleccionToolStripMenuItem.Name = "descargarSeleccionToolStripMenuItem";
-            descargarSeleccionToolStripMenuItem.Size = new Size(180, 22);
+            descargarSeleccionToolStripMenuItem.Size = new Size(178, 22);
             descargarSeleccionToolStripMenuItem.Text = "Descargar seleccion";
             descargarSeleccionToolStripMenuItem.Click += descargarSeleccionToolStripMenuItem_Click;
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(177, 6);
+            toolStripSeparator4.Size = new Size(175, 6);
             // 
             // opcionesToolStripMenuItem
             // 
             opcionesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { descomprimirDespuesDeDescargarToolStripMenuItem, toolStripMenuItem1, permitirMultiplesInstanciasToolStripMenuItem });
             opcionesToolStripMenuItem.Name = "opcionesToolStripMenuItem";
-            opcionesToolStripMenuItem.Size = new Size(180, 22);
+            opcionesToolStripMenuItem.Size = new Size(178, 22);
             opcionesToolStripMenuItem.Text = "Opciones";
             // 
             // descomprimirDespuesDeDescargarToolStripMenuItem
@@ -379,13 +387,13 @@
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(177, 6);
+            toolStripSeparator2.Size = new Size(175, 6);
             // 
             // buscarToolStripMenuItem1
             // 
             buscarToolStripMenuItem1.CheckOnClick = true;
             buscarToolStripMenuItem1.Name = "buscarToolStripMenuItem1";
-            buscarToolStripMenuItem1.Size = new Size(180, 22);
+            buscarToolStripMenuItem1.Size = new Size(178, 22);
             buscarToolStripMenuItem1.Text = "Buscar";
             buscarToolStripMenuItem1.CheckedChanged += buscarToolStripMenuItem1_CheckedChanged;
             // 
@@ -517,5 +525,6 @@
         private ToolStripComboBox toolStripComboBox4;
         private ToolStripMenuItem enviaArchivoSeleccionadoToolStripMenuItem;
         private ToolStripMenuItem enviaArchivoLocalToolStripMenuItem;
+        private ToolStripMenuItem dragDropdskExploresrToolStripMenuItem;
     }
 }

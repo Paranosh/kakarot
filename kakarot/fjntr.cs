@@ -8,13 +8,7 @@ using System.IO.Ports;
 using System.IO.Compression;
 using System.Text;
 using System.Reflection;
-using System.Windows.Forms;
-using System.Collections.Generic;
-using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Security.Policy;
 using Konamiman.JoySerTrans;
-using System.Globalization;
 
 
 namespace kakarot
@@ -37,7 +31,7 @@ namespace kakarot
         ToolStripMenuItem OpenMSX;
         WebBrowser webBrowser = new WebBrowser();
         Dictionary<string, string> dictionary = new Dictionary<string, string>();
-        string PathOpenMSX, TipoDeMApper, acumulador="";
+        string PathOpenMSX, TipoDeMApper, acumulador = "";
         private System.Windows.Forms.Timer fadeTimer;
         private float opacityIncrement;
         private bool fadeIn, permitirVariasInstancias, descargando = false;
@@ -1725,10 +1719,10 @@ namespace kakarot
         {
             bytesSent += e - 2;
             //var pos = Console.CursorLeft;
-            toolStripStatusLabel1.Text = acumulador+ $"{((decimal)bytesSent / fileLength) * 100:0.0}%";
+            toolStripStatusLabel1.Text = acumulador + $"{((decimal)bytesSent / fileLength) * 100:0.0}%";
             //Console.CursorLeft = pos;
         }
-        
+
         private void Sender_HeaderSent(object sender, (long, string) e)
         {
             fileLength = e.Item1;
@@ -1737,7 +1731,7 @@ namespace kakarot
         }
         private void enviaArchivoSeleccionadoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           
+
         }
 
         private void enviaArchivoLocalToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1753,10 +1747,10 @@ namespace kakarot
             {
                 try
                 {
-                    
+
                     serialPort.PortName = toolStripComboBox2.SelectedItem.ToString();
                     if (serialPort.IsOpen) { serialPort.Close(); }
-                    
+
                     //sacado de https://github.com/Konamiman/JoySerTrans
                     acumulador = "";
                     sendero = new Sender("COM6", 19200);
@@ -1764,11 +1758,27 @@ namespace kakarot
                     sendero.DataSent += Sender_DataSent;
                     sendero.Send(dlg.FileName, "1.ROM");
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     MessageBox.Show($"Ocurrio un error al enviar el archivo:\r\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     serialPort.Dispose();
                 }
+            }
+        }
+
+        private void dragDropdskExploresrToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            toolStripStatusLabel1.Text = "Abriendo .DSK, por favor, espere...";
+            var dlg = new OpenFileDialog();
+            dlg.Filter = "Archivos DSK (*.dsk)|*.dsk|Todos los archivos (*.*)|*.*";
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                FrmMiniExplorer frm = new FrmMiniExplorer(dlg.FileName);
+                frm.Show();
+            }
+            else
+            {
+                toolStripStatusLabel1.Text = "cancelado por el usuario...";
             }
         }
     }
