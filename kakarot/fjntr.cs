@@ -1718,7 +1718,7 @@ namespace kakarot
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 // romname is the original ROM, patchname is the patch to apply
-                MessageBox.Show(ComputeFileSha1(dlg.FileName));
+                MessageBox.Show(ComputeFileSha1(dlg.FileName), "SHA1");
             }
         }
         private void Sender_DataSent(object sender, int e)
