@@ -1778,7 +1778,7 @@ namespace kakarot
             }
             else
             {
-                toolStripStatusLabel1.Text = "cancelado por el usuario...";
+                toolStripStatusLabel1.Text = "Cancelado por el usuario...";
             }
         }
     }
