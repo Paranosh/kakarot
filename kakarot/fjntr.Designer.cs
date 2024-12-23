@@ -39,16 +39,18 @@
             dataGridView1 = new DataGridView();
             contextMenuStrip1 = new ContextMenuStrip(components);
             herramientasToolStripMenuItem = new ToolStripMenuItem();
+            EnviarAMSXMenuItem = new ToolStripMenuItem();
+            toolStripComboBox2 = new ToolStripComboBox();
+            toolStripComboBox4 = new ToolStripComboBox();
+            enviaArchivoSeleccionadoToolStripMenuItem = new ToolStripMenuItem();
+            enviaArchivoLocalToolStripMenuItem = new ToolStripMenuItem();
             convertirAToolStripMenuItem = new ToolStripMenuItem();
             dSKROMToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem3 = new ToolStripMenuItem();
             rOMCASToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem2 = new ToolStripMenuItem();
-            verSHA1ToolStripMenuItem = new ToolStripMenuItem();
             aplicarParcheIPSToolStripMenuItem = new ToolStripMenuItem();
-            enviarAMsxToolStripMenuItem = new ToolStripMenuItem();
-            toolStripComboBox1 = new ToolStripComboBox();
-            baudrateToolStripMenuItem = new ToolStripMenuItem();
+            verSHA1ToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             reposToolStripMenuItem = new ToolStripMenuItem();
             filehunterToolStripMenuItem = new ToolStripMenuItem();
@@ -170,16 +172,51 @@
             // contextMenuStrip1
             // 
             contextMenuStrip1.ImageScalingSize = new Size(24, 24);
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { herramientasToolStripMenuItem, enviarAMsxToolStripMenuItem, toolStripSeparator3, reposToolStripMenuItem, toolStripSeparator1, webMSXToolStripMenuItem, descargarSeleccionToolStripMenuItem, toolStripSeparator4, opcionesToolStripMenuItem, toolStripSeparator2, buscarToolStripMenuItem1 });
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { herramientasToolStripMenuItem, toolStripSeparator3, reposToolStripMenuItem, toolStripSeparator1, webMSXToolStripMenuItem, descargarSeleccionToolStripMenuItem, toolStripSeparator4, opcionesToolStripMenuItem, toolStripSeparator2, buscarToolStripMenuItem1 });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(179, 182);
+            contextMenuStrip1.Size = new Size(181, 182);
             // 
             // herramientasToolStripMenuItem
             // 
-            herramientasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { convertirAToolStripMenuItem, toolStripMenuItem2, aplicarParcheIPSToolStripMenuItem, verSHA1ToolStripMenuItem });
+            herramientasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { EnviarAMSXMenuItem, convertirAToolStripMenuItem, toolStripMenuItem2, aplicarParcheIPSToolStripMenuItem, verSHA1ToolStripMenuItem });
             herramientasToolStripMenuItem.Name = "herramientasToolStripMenuItem";
-            herramientasToolStripMenuItem.Size = new Size(178, 22);
+            herramientasToolStripMenuItem.Size = new Size(180, 22);
             herramientasToolStripMenuItem.Text = "Herramientas";
+            // 
+            // EnviarAMSXMenuItem
+            // 
+            EnviarAMSXMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripComboBox2, toolStripComboBox4, enviaArchivoSeleccionadoToolStripMenuItem, enviaArchivoLocalToolStripMenuItem });
+            EnviarAMSXMenuItem.Name = "EnviarAMSXMenuItem";
+            EnviarAMSXMenuItem.Size = new Size(180, 22);
+            EnviarAMSXMenuItem.Text = "Enviar a MSX";
+            EnviarAMSXMenuItem.Visible = false;
+            // 
+            // toolStripComboBox2
+            // 
+            toolStripComboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
+            toolStripComboBox2.Name = "toolStripComboBox2";
+            toolStripComboBox2.Size = new Size(121, 23);
+            // 
+            // toolStripComboBox4
+            // 
+            toolStripComboBox4.DropDownStyle = ComboBoxStyle.DropDownList;
+            toolStripComboBox4.Items.AddRange(new object[] { "57600", "19200", "9600", "4800", "2400" });
+            toolStripComboBox4.Name = "toolStripComboBox4";
+            toolStripComboBox4.Size = new Size(121, 23);
+            // 
+            // enviaArchivoSeleccionadoToolStripMenuItem
+            // 
+            enviaArchivoSeleccionadoToolStripMenuItem.Name = "enviaArchivoSeleccionadoToolStripMenuItem";
+            enviaArchivoSeleccionadoToolStripMenuItem.Size = new Size(216, 22);
+            enviaArchivoSeleccionadoToolStripMenuItem.Text = "Envia archivo seleccionado";
+            enviaArchivoSeleccionadoToolStripMenuItem.Click += enviaArchivoSeleccionadoToolStripMenuItem_Click;
+            // 
+            // enviaArchivoLocalToolStripMenuItem
+            // 
+            enviaArchivoLocalToolStripMenuItem.Name = "enviaArchivoLocalToolStripMenuItem";
+            enviaArchivoLocalToolStripMenuItem.Size = new Size(216, 22);
+            enviaArchivoLocalToolStripMenuItem.Text = "Envia archivo local";
+            enviaArchivoLocalToolStripMenuItem.Click += enviaArchivoLocalToolStripMenuItem_Click;
             // 
             // convertirAToolStripMenuItem
             // 
@@ -216,13 +253,6 @@
             toolStripMenuItem2.Text = "Concatenar";
             toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
-            // verSHA1ToolStripMenuItem
-            // 
-            verSHA1ToolStripMenuItem.Name = "verSHA1ToolStripMenuItem";
-            verSHA1ToolStripMenuItem.Size = new Size(180, 22);
-            verSHA1ToolStripMenuItem.Text = "SHA1";
-            verSHA1ToolStripMenuItem.Click += verSHA1ToolStripMenuItem_Click;
-            // 
             // aplicarParcheIPSToolStripMenuItem
             // 
             aplicarParcheIPSToolStripMenuItem.Name = "aplicarParcheIPSToolStripMenuItem";
@@ -230,35 +260,23 @@
             aplicarParcheIPSToolStripMenuItem.Text = "Aplicar parche IPS";
             aplicarParcheIPSToolStripMenuItem.Click += aplicarParcheIPSToolStripMenuItem_Click;
             // 
-            // enviarAMsxToolStripMenuItem
+            // verSHA1ToolStripMenuItem
             // 
-            enviarAMsxToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripComboBox1, baudrateToolStripMenuItem });
-            enviarAMsxToolStripMenuItem.Name = "enviarAMsxToolStripMenuItem";
-            enviarAMsxToolStripMenuItem.Size = new Size(178, 22);
-            enviarAMsxToolStripMenuItem.Text = "Enviar a MSX";
-            // 
-            // toolStripComboBox1
-            // 
-            toolStripComboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
-            toolStripComboBox1.Name = "toolStripComboBox1";
-            toolStripComboBox1.Size = new Size(121, 23);
-            // 
-            // baudrateToolStripMenuItem
-            // 
-            baudrateToolStripMenuItem.Name = "baudrateToolStripMenuItem";
-            baudrateToolStripMenuItem.Size = new Size(181, 22);
-            baudrateToolStripMenuItem.Text = "baudrate";
+            verSHA1ToolStripMenuItem.Name = "verSHA1ToolStripMenuItem";
+            verSHA1ToolStripMenuItem.Size = new Size(180, 22);
+            verSHA1ToolStripMenuItem.Text = "SHA1";
+            verSHA1ToolStripMenuItem.Click += verSHA1ToolStripMenuItem_Click;
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(175, 6);
+            toolStripSeparator3.Size = new Size(177, 6);
             // 
             // reposToolStripMenuItem
             // 
             reposToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { filehunterToolStripMenuItem, toolStripMenuItem4 });
             reposToolStripMenuItem.Name = "reposToolStripMenuItem";
-            reposToolStripMenuItem.Size = new Size(178, 22);
+            reposToolStripMenuItem.Size = new Size(180, 22);
             reposToolStripMenuItem.Text = "Repos";
             // 
             // filehunterToolStripMenuItem
@@ -307,32 +325,32 @@
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(175, 6);
+            toolStripSeparator1.Size = new Size(177, 6);
             // 
             // webMSXToolStripMenuItem
             // 
             webMSXToolStripMenuItem.Name = "webMSXToolStripMenuItem";
-            webMSXToolStripMenuItem.Size = new Size(178, 22);
+            webMSXToolStripMenuItem.Size = new Size(180, 22);
             webMSXToolStripMenuItem.Text = "WebMSX";
             webMSXToolStripMenuItem.Click += webMSXToolStripMenuItem_Click;
             // 
             // descargarSeleccionToolStripMenuItem
             // 
             descargarSeleccionToolStripMenuItem.Name = "descargarSeleccionToolStripMenuItem";
-            descargarSeleccionToolStripMenuItem.Size = new Size(178, 22);
+            descargarSeleccionToolStripMenuItem.Size = new Size(180, 22);
             descargarSeleccionToolStripMenuItem.Text = "Descargar seleccion";
             descargarSeleccionToolStripMenuItem.Click += descargarSeleccionToolStripMenuItem_Click;
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(175, 6);
+            toolStripSeparator4.Size = new Size(177, 6);
             // 
             // opcionesToolStripMenuItem
             // 
             opcionesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { descomprimirDespuesDeDescargarToolStripMenuItem, toolStripMenuItem1, permitirMultiplesInstanciasToolStripMenuItem });
             opcionesToolStripMenuItem.Name = "opcionesToolStripMenuItem";
-            opcionesToolStripMenuItem.Size = new Size(178, 22);
+            opcionesToolStripMenuItem.Size = new Size(180, 22);
             opcionesToolStripMenuItem.Text = "Opciones";
             // 
             // descomprimirDespuesDeDescargarToolStripMenuItem
@@ -361,13 +379,13 @@
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(175, 6);
+            toolStripSeparator2.Size = new Size(177, 6);
             // 
             // buscarToolStripMenuItem1
             // 
             buscarToolStripMenuItem1.CheckOnClick = true;
             buscarToolStripMenuItem1.Name = "buscarToolStripMenuItem1";
-            buscarToolStripMenuItem1.Size = new Size(178, 22);
+            buscarToolStripMenuItem1.Size = new Size(180, 22);
             buscarToolStripMenuItem1.Text = "Buscar";
             buscarToolStripMenuItem1.CheckedChanged += buscarToolStripMenuItem1_CheckedChanged;
             // 
@@ -472,14 +490,11 @@
         private ToolStripMenuItem herramientasToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripSeparator toolStripSeparator1;
-        private ToolStripMenuItem enviarAMsxToolStripMenuItem;
-        private ToolStripComboBox toolStripComboBox1;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripStatusLabel toolStripStatusLabel1;
         private StatusStrip statusStrip1;
         private ToolStripSeparator toolStripSeparator4;
         private ToolStripMenuItem opcionesToolStripMenuItem;
-        private ToolStripMenuItem baudrateToolStripMenuItem;
         private ToolStripMenuItem descomprimirDespuesDeDescargarToolStripMenuItem;
         private ToolStripMenuItem webMSXToolStripMenuItem;
         private ToolStripComboBox toolStripComboBox3;
@@ -497,5 +512,10 @@
         private ToolStripMenuItem rOMCASToolStripMenuItem;
         private ToolStripMenuItem aplicarParcheIPSToolStripMenuItem;
         private ToolStripMenuItem verSHA1ToolStripMenuItem;
+        private ToolStripMenuItem EnviarAMSXMenuItem;
+        private ToolStripComboBox toolStripComboBox2;
+        private ToolStripComboBox toolStripComboBox4;
+        private ToolStripMenuItem enviaArchivoSeleccionadoToolStripMenuItem;
+        private ToolStripMenuItem enviaArchivoLocalToolStripMenuItem;
     }
 }

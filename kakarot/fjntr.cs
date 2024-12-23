@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Security.Policy;
+using Konamiman.JoySerTrans;
+using System.Globalization;
 
 
 namespace kakarot
@@ -29,10 +31,13 @@ namespace kakarot
             this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
 
         }
+        static long fileLength;
+        static long bytesSent;
+        static string filenameSent;
         ToolStripMenuItem OpenMSX;
         WebBrowser webBrowser = new WebBrowser();
         Dictionary<string, string> dictionary = new Dictionary<string, string>();
-        string PathOpenMSX, TipoDeMApper;
+        string PathOpenMSX, TipoDeMApper, acumulador="";
         private System.Windows.Forms.Timer fadeTimer;
         private float opacityIncrement;
         private bool fadeIn, permitirVariasInstancias, descargando = false;
@@ -448,10 +453,11 @@ namespace kakarot
                 {
                     // Mostrar cada puerto COM disponible
                     // MessageBox.Show($"Puerto COM encontrado: {port}");
-                    toolStripComboBox1.Items.Add(port);
+                    toolStripComboBox2.Items.Add(port);
                 }
             }
-            if (toolStripComboBox1.Items.Count == 0) { toolStripComboBox1.Items.Add("SIn Puertos Com"); } else { toolStripComboBox1.SelectedIndex = 0; }
+            if (toolStripComboBox2.Items.Count == 0) { toolStripComboBox2.Items.Add("SIn Puertos Com"); } else { toolStripComboBox2.SelectedIndex = 0; }
+            toolStripComboBox4.SelectedIndex = 1;
             var file1DownloadTask1 = TaskDownloadFile("sha1sums.txt", "https://download.file-hunter.com/sha1sums.txt");
             var file1DownloadTask2 = TaskDownloadFile("Update-Log.txt", "https://download.file-hunter.com/Update-Log.txt");
 
@@ -1603,14 +1609,14 @@ namespace kakarot
             //sacado de https://sneslab.net/wiki/IPS_patching_code
             try
             {
-                string larom = "", rom="", elips = "", ips="", elsha = "";
+                string larom = "", rom = "", elips = "", ips = "", elsha = "";
                 FileStream romstream, ipsstream;
                 var dlg = new OpenFileDialog();
                 dlg.Filter = "Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk|Todos los archivos (*.*)|*.*";
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     larom = dlg.FileName;
-                    rom= Path.GetFileName(larom);
+                    rom = Path.GetFileName(larom);
                     elsha = ComputeFileSha1(larom);
                 }
                 else { return; }
@@ -1678,8 +1684,8 @@ namespace kakarot
                 }
                 else if (dialogResult == DialogResult.No)
                 {
-                   // MessageBox.Show("Cancelado por el usuario", "Informacion", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }          
+                    // MessageBox.Show("Cancelado por el usuario", "Informacion", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
             catch (Exception ex)
             {
@@ -1712,7 +1718,57 @@ namespace kakarot
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 // romname is the original ROM, patchname is the patch to apply
-               MessageBox.Show(ComputeFileSha1(dlg.FileName));
+                MessageBox.Show(ComputeFileSha1(dlg.FileName));
+            }
+        }
+        private void Sender_DataSent(object sender, int e)
+        {
+            bytesSent += e - 2;
+            //var pos = Console.CursorLeft;
+            toolStripStatusLabel1.Text = acumulador+ $"{((decimal)bytesSent / fileLength) * 100:0.0}%";
+            //Console.CursorLeft = pos;
+        }
+        
+        private void Sender_HeaderSent(object sender, (long, string) e)
+        {
+            fileLength = e.Item1;
+            filenameSent = e.Item2;
+            acumulador = $"Enviando archivo --> {filenameSent}, tamaño {(decimal)fileLength / 1024:0}K... ";
+        }
+        private void enviaArchivoSeleccionadoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void enviaArchivoLocalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Si algun dia tengo manera de que me funcione lo añado, mientras...
+            //no tengo manera humana de que me funcione con
+            //niguno de lo tres usb ttl chinescos que tengo tirados por casa
+            var dlg = new OpenFileDialog();
+            Sender sendero;
+            SerialPort serialPort = new SerialPort();
+            dlg.Filter = "Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk|Todos los archivos (*.*)|*.*";
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    
+                    serialPort.PortName = toolStripComboBox2.SelectedItem.ToString();
+                    if (serialPort.IsOpen) { serialPort.Close(); }
+                    
+                    //sacado de https://github.com/Konamiman/JoySerTrans
+                    acumulador = "";
+                    sendero = new Sender("COM6", 19200);
+                    sendero.HeaderSent += Sender_HeaderSent;
+                    sendero.DataSent += Sender_DataSent;
+                    sendero.Send(dlg.FileName, "1.ROM");
+                }
+                catch (Exception ex) 
+                {
+                    MessageBox.Show($"Ocurrio un error al enviar el archivo:\r\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    serialPort.Dispose();
+                }
             }
         }
     }
