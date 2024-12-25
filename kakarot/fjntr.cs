@@ -44,6 +44,7 @@ namespace kakarot
         private DataTable _dataTableDV2;
         string listado = "", updatelistado = "", archivosdescargados = "Descargado ";
         List<FileData> fileList, fileListUpdate;
+        List<string> originalItems = new List<string>();
         int ContadorDescargas = 0;
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
@@ -588,7 +589,7 @@ namespace kakarot
             }
 
         }
-        List<string> originalItems = new List<string>();
+       
         private void ApplyFilter(string filterText, object target, DataTable _dataTable = null)
         {
             try
