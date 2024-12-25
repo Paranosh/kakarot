@@ -9,11 +9,12 @@ using System.IO.Compression;
 using System.Text;
 using System.Reflection;
 using Konamiman.JoySerTrans;
+using System.Globalization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace kakarot
 {
-
     public partial class fjntr : Form
     {
         public fjntr()
@@ -23,7 +24,6 @@ namespace kakarot
             this.Resize += Form1_Resize;
             notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
             this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
-
         }
         static long fileLength;
         static long bytesSent;
@@ -195,8 +195,8 @@ namespace kakarot
                                 a++;
                             }
                             //miramos si el listbox tiene un archivo con fecha posterior a FechaUltimoArchivoFJ
-                            DateTime dt1 = DateTime.Parse(FechaDelUltimoArchivoFJ);
-                            DateTime dt2 = DateTime.Parse(fechaultimaactualizacion);
+                            DateTime dt1 = DateTime.ParseExact(FechaDelUltimoArchivoFJ, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                            DateTime dt2 = DateTime.ParseExact(fechaultimaactualizacion, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                             if (dt2 > dt1) MessageBox.Show("Hay nuevos archivos en filehunter desde la ultima vez que miraste, recuerda de ir a ver las novedades para que este mensaje deje de salir", "Novedades", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
@@ -321,19 +321,77 @@ namespace kakarot
             if (Addseparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
             return subItem; // Retornar el subitem creado
         }
+        private void ApplyLanguage(string cultureCode)
+        {
+            try
+            {
+                // Cambia la cultura actual de la aplicación
+                var culture = new System.Globalization.CultureInfo(cultureCode);
+                System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+
+                // Carga los recursos del formulario
+                var resources = new System.ComponentModel.ComponentResourceManager(this.GetType());
+
+                // Aplica los recursos al formulario y a todos los controles
+                ApplyResourcesToControls(this, resources);
+
+                // Actualiza el texto del formulario mismo
+                resources.ApplyResources(this, "$this");
+            }
+            catch (CultureNotFoundException)
+            {
+                MessageBox.Show($"Cultura no encontrada: {cultureCode}. Aplicando inglés por defecto.");
+                ApplyLanguage("en");
+            }
+        }
+        private void ApplyResourcesToControls(Control control, ComponentResourceManager resources)
+        {
+            // Aplica los recursos al control actual
+            resources.ApplyResources(control, control.Name);
+
+            // Aplica los recursos a los controles hijos (recursivamente)
+            foreach (Control childControl in control.Controls)
+            {
+                ApplyResourcesToControls(childControl, resources);
+            }
+        }
+        private void UpdateTexts()
+        {
+            // Actualiza los textos dinámicos usando Properties.Strings
+            herramientasToolStripMenuItem.Text = kakarot.Strings.Herramientas;
+            opcionesToolStripMenuItem.Text = kakarot.Strings.Opciones;
+            buscarToolStripMenuItem1.Text = kakarot.Strings.Buscar;
+            descargarSeleccionToolStripMenuItem.Text = kakarot.Strings.Descargar_seleccion;
+            convertirAToolStripMenuItem.Text = kakarot.Strings.Convertir_a;
+            aplicarParcheIPSToolStripMenuItem.Text = kakarot.Strings.AplicarParche;
+            ConcatoolStripMenuItem.Text = kakarot.Strings.Concatenar;
+            descomprimirDespuesDeDescargarToolStripMenuItem.Text = kakarot.Strings.DescomprimirDespuesDeDescargar;
+            SetOpenMSXPathtoolStripMenuItem.Text = kakarot.Strings.EstablecerRutaParaOpenMSX;
+            permitirMultiplesInstanciasToolStripMenuItem.Text= kakarot.Strings.PermitirMultiplesInstancias;
+            IdiomaMenuItem.Text = kakarot.Strings.Idioma;
+            if (PathOpenMSX is not null) 
+            {
+
+            }
+            
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
+
+            //Detecta la cultura del sistema y aplica el idioma automáticamente
+            //var systemCulture = CultureInfo.CurrentUICulture;
+            //ApplyLanguage(systemCulture.Name);
             webBrowser.Navigate("https://msxscans.file-hunter.com/");
             ConfigureListBoxAppearance(listBox1);
             if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
             if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
             //iniciacilzamos config...
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            //chuleta
             //config.AppSettings.Settings.Add("NewSetting", "SomeValue");
             //config.Save(ConfigurationSaveMode.Modified);
             //ConfigurationManager.RefreshSection("appSettings");
             //config.AppSettings.Settings["DescomprimirDespuesdeDescargar"].Value = "true";
-
             if (config.AppSettings.Settings["OpenMSXPath"].Value == "")
             {
                 PathOpenMSX = isOpenMSXInstalled("openmsx");
@@ -342,6 +400,9 @@ namespace kakarot
             {
                 PathOpenMSX = config.AppSettings.Settings["OpenMSXPath"].Value;
             }
+            if (config.AppSettings.Settings["Idioma"].Value == "en") { ApplyLanguage("en"); IdiomaEngtoolStripMenuItem.Checked = true; }
+            if (config.AppSettings.Settings["Idioma"].Value == "es") { ApplyLanguage("es"); IdiomaSpatoolStripMenuItem.Checked = true; }
+            UpdateTexts();
             if (!Directory.Exists(Application.StartupPath + "\\tmp\\")) Directory.CreateDirectory(Application.StartupPath + "\\tmp\\");
             ClearDirectory(Application.StartupPath + "\\tmp\\");
             toolStripComboBox3.SelectedIndex = 0;
@@ -450,11 +511,10 @@ namespace kakarot
                     toolStripComboBox2.Items.Add(port);
                 }
             }
-            if (toolStripComboBox2.Items.Count == 0) { toolStripComboBox2.Items.Add("SIn Puertos Com"); } else { toolStripComboBox2.SelectedIndex = 0; }
+            if (toolStripComboBox2.Items.Count == 0) { toolStripComboBox2.Items.Add("Sin Puertos Com"); } else { toolStripComboBox2.SelectedIndex = 0; }
             toolStripComboBox4.SelectedIndex = 1;
             var file1DownloadTask1 = TaskDownloadFile("sha1sums.txt", "https://download.file-hunter.com/sha1sums.txt");
             var file1DownloadTask2 = TaskDownloadFile("Update-Log.txt", "https://download.file-hunter.com/Update-Log.txt");
-
         }
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1780,6 +1840,35 @@ namespace kakarot
             {
                 toolStripStatusLabel1.Text = "Cancelado por el usuario...";
             }
+        }
+
+        private void IdiomaSpatoolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            IdiomaEngtoolStripMenuItem.Checked = false;
+            IdiomaSpatoolStripMenuItem.Checked = true;
+            ApplyLanguage("es");
+            UpdateTexts();
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings["Idioma"].Value = "es";
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+
+
+
+
+
+        }
+
+        private void IdiomaEngtoolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+            IdiomaSpatoolStripMenuItem.Checked = false;
+            IdiomaEngtoolStripMenuItem.Checked = true;
+            ApplyLanguage("en");
+            UpdateTexts();
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings["Idioma"].Value = "en";
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
         }
     }
 }

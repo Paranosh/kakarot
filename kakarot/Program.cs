@@ -1,4 +1,5 @@
 using System.Configuration;
+using System.Globalization;
 
 namespace kakarot
 {
@@ -23,6 +24,7 @@ namespace kakarot
                     Environment.Exit(0);
                 }
             }
+          //  Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             using (var splash = new Splash())
