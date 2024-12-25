@@ -10,12 +10,6 @@ using System.Text;
 using System.Reflection;
 using Konamiman.JoySerTrans;
 using System.Globalization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using kakarot.Properties;
-using System.Windows.Forms;
-using System.Runtime.Intrinsics.Arm;
-using System.Security.Cryptography;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace kakarot
