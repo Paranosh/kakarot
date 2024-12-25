@@ -115,11 +115,38 @@ namespace kakarot {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Ejecuta ROM/DSK/CAS/WAV.
+        /// </summary>
+        internal static string EjecutaROM_DSK_CAS_WAV {
+            get {
+                return ResourceManager.GetString("EjecutaROM/DSK/CAS/WAV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ejecuta Seleccionado.
+        /// </summary>
+        internal static string EjecutaSeleccionado {
+            get {
+                return ResourceManager.GetString("EjecutaSeleccionado", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Establecer ruta para OpenMSX.
         /// </summary>
         internal static string EstablecerRutaParaOpenMSX {
             get {
                 return ResourceManager.GetString("EstablecerRutaParaOpenMSX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Filtro rápido.
+        /// </summary>
+        internal static string FiltroRapido {
+            get {
+                return ResourceManager.GetString("FiltroRapido", resourceCulture);
             }
         }
         
@@ -138,6 +165,15 @@ namespace kakarot {
         internal static string Idioma {
             get {
                 return ResourceManager.GetString("Idioma", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Informar de actualizaciones.
+        /// </summary>
+        internal static string InformarDeActualizaciones {
+            get {
+                return ResourceManager.GetString("InformarDeActualizaciones", resourceCulture);
             }
         }
         
@@ -165,6 +201,15 @@ namespace kakarot {
         internal static string Repos {
             get {
                 return ResourceManager.GetString("Repos", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ver novedades.
+        /// </summary>
+        internal static string VerNovedades {
+            get {
+                return ResourceManager.GetString("VerNovedades", resourceCulture);
             }
         }
     }

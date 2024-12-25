@@ -11,6 +11,11 @@ using System.Reflection;
 using Konamiman.JoySerTrans;
 using System.Globalization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using kakarot.Properties;
+using System.Windows.Forms;
+using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace kakarot
@@ -232,7 +237,7 @@ namespace kakarot
         /// <param name="position">La posición en la que insertar el elemento (0 para inicio).</param>
         /// <param name="isChecked">Si el elemento debe estar marcado inicialmente.</param>
         /// <returns>El elemento creado.</returns>
-        static ToolStripMenuItem AddMenuItem(ContextMenuStrip contextMenuStrip, string itemText, int position, bool isChecked)
+        static ToolStripMenuItem AddMenuItem(ContextMenuStrip contextMenuStrip, string itemText, int position, bool isChecked, string Name)
         {
             // Crear un nuevo ToolStripMenuItem
             ToolStripMenuItem newItem = new ToolStripMenuItem(itemText)
@@ -240,7 +245,7 @@ namespace kakarot
                 CheckOnClick = false,
                 Checked = false
             };
-
+            newItem.Name = Name;   
             // Asociar un evento Click al ToolStripMenuItem
             newItem.Click += (sender, e) =>
             {
@@ -300,10 +305,11 @@ namespace kakarot
         /// <param name="parentItem">El elemento principal al cual agregar el subitem.</param>
         /// <param name="subItemText">El texto del subitem.</param>
         /// <returns>El subitem creado.</returns>
-        static ToolStripMenuItem AddSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemText, bool Addseparator, Action<bool> clickedItem)
+        static ToolStripMenuItem AddSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemText, bool Addseparator, Action<bool> clickedItem, string Name)
         {
             // Crear un nuevo ToolStripMenuItem como subitem
             ToolStripMenuItem subItem = new ToolStripMenuItem(subItemText);
+            subItem.Name = Name;
             // Asociar un evento Click al subitem
             subItem.Click += (sender, e) =>
             {
@@ -369,15 +375,23 @@ namespace kakarot
             SetOpenMSXPathtoolStripMenuItem.Text = kakarot.Strings.EstablecerRutaParaOpenMSX;
             permitirMultiplesInstanciasToolStripMenuItem.Text= kakarot.Strings.PermitirMultiplesInstancias;
             IdiomaMenuItem.Text = kakarot.Strings.Idioma;
+            verNovedadesToolStripMenuItem.Text = kakarot.Strings.VerNovedades;
+            informarDeActualizacionesToolStripMenuItem.Text = kakarot.Strings.InformarDeActualizaciones;
             if (PathOpenMSX is not null) 
             {
-
+                if (OpenMSX is ToolStripMenuItem menuItem && menuItem.DropDownItems.Count > 0)
+                {
+                    foreach (ToolStripItem subItem in menuItem.DropDownItems)
+                    {
+                        if (subItem.Name == "EjecutaSelecionado") subItem.Text = kakarot.Strings.EjecutaSeleccionado;
+                        if (subItem.Name == "EjecutaROMDSKCASWAV") subItem.Text = kakarot.Strings.EjecutaROM_DSK_CAS_WAV;
+                    }
+                }
             }
-            
+            toolStripComboBox3.Items[0] = kakarot.Strings.FiltroRapido;
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-
             //Detecta la cultura del sistema y aplica el idioma automáticamente
             //var systemCulture = CultureInfo.CurrentUICulture;
             //ApplyLanguage(systemCulture.Name);
@@ -411,7 +425,7 @@ namespace kakarot
                 /* config.AppSettings.Settings["OpenMSXPath"].Value = PathOpenMSX;
                  config.Save(ConfigurationSaveMode.Modified);
                  ConfigurationManager.RefreshSection("appSettings");*/
-                OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false);
+                OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false, "MenuOpenMSX");
                 //AddSubMenuItemToolStrip(OpenMSX, "TIPO DE MAPPER", true, clickedItem =>
                 //{
                 //    //MessageBox.Show(selectedItem);
@@ -433,7 +447,6 @@ namespace kakarot
                             string fileName = uri.Segments[uri.Segments.Length - 1];
                             // archivosdescargados = "Descargado ";
                             TaskDownloadFileArchivos(Application.StartupPath + "\\tmp\\" + fileName.Replace("%20", "_"), uri.ToString(), true);
-
                         }
                     }
                     if (IsControlVisible(dataGridView2))
@@ -453,7 +466,7 @@ namespace kakarot
 
                         }
                     }
-                });
+                },"EjecutaSelecionado");
                 AddComboBoxSubItem("Mappers", OpenMSX, new string[] { "Mapper Auto", "Konami 5", "Konami 4", "ASCII 16", "ASCII 8" }
                 , selectedItem =>
                 {
@@ -495,7 +508,7 @@ namespace kakarot
                             MessageBox.Show("Error lanzando " + dlg.FileName, "Error");
                         }
                     }
-                });
+                }, "EjecutaROMDSKCASWAV");
             }
             descomprimirDespuesDeDescargarToolStripMenuItem.Checked = bool.Parse(ConfigurationManager.AppSettings["DescomprimirDespuesdeDescargar"]);
             //listamos los puertos com si existen en el equipo si no devolvera la palabra null
@@ -1227,7 +1240,7 @@ namespace kakarot
         }
         private void toolStripComboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (toolStripComboBox3.SelectedItem.ToString() != "Filtro rapido") ApplyFilter(toolStripComboBox3.SelectedItem.ToString(), dataGridView1, _dataTableDV1);
+            if (toolStripComboBox3.SelectedItem.ToString() != kakarot.Strings.FiltroRapido) ApplyFilter(toolStripComboBox3.SelectedItem.ToString(), dataGridView1, _dataTableDV1);
         }
         private void fjntr_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -1501,28 +1514,6 @@ namespace kakarot
 
             }
         }
-        //private void DownloadFile(string url, string tempfile)
-        //{
-        //    try
-        //    {
-        //        toolStripStatusLabel1.Text = "Descargando --> " + url;
-        //        Thread.Sleep(250);
-        //        WebClient Client = new WebClient();
-        //        Client.DownloadFile(url, tempfile);
-        //        Client.DownloadFileAsync += (o, args) => MethodToUpdateControlDownloadFile(tempfile, DestFolfer, fileName);
-        //    }
-        //    catch (Exception Ex)
-        //    {
-        //        toolStripStatusLabel1.Text = "Error descargando " + url;
-        //        descargando = false;
-
-        //    }
-        //}
-        //private void MethodToUpdateControlDownloadFile(string TempFile, string DestFolfer, string filename)
-        //{
-        //    toolStripStatusLabel1.Text = "Descargado con exito --> " + filename;
-
-        //}
         private void filehunterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (PathOpenMSX is not null) OpenMSX.Enabled = true;
@@ -1593,7 +1584,6 @@ namespace kakarot
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
-
         private void rOMCASToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var dlg = new OpenFileDialog();
@@ -1782,7 +1772,6 @@ namespace kakarot
             toolStripStatusLabel1.Text = acumulador + $"{((decimal)bytesSent / fileLength) * 100:0.0}%";
             //Console.CursorLeft = pos;
         }
-
         private void Sender_HeaderSent(object sender, (long, string) e)
         {
             fileLength = e.Item1;
@@ -1793,7 +1782,6 @@ namespace kakarot
         {
 
         }
-
         private void enviaArchivoLocalToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //Si algun dia tengo manera de que me funcione lo añado, mientras...
@@ -1825,7 +1813,6 @@ namespace kakarot
                 }
             }
         }
-
         private void dragDropdskExploresrToolStripMenuItem_Click(object sender, EventArgs e)
         {
             toolStripStatusLabel1.Text = "Abriendo .DSK, por favor, espere...";
@@ -1841,7 +1828,6 @@ namespace kakarot
                 toolStripStatusLabel1.Text = "Cancelado por el usuario...";
             }
         }
-
         private void IdiomaSpatoolStripMenuItem_Click(object sender, EventArgs e)
         {
             IdiomaEngtoolStripMenuItem.Checked = false;
@@ -1852,13 +1838,7 @@ namespace kakarot
             config.AppSettings.Settings["Idioma"].Value = "es";
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
-
-
-
-
-
         }
-
         private void IdiomaEngtoolStripMenuItem5_Click(object sender, EventArgs e)
         {
             IdiomaSpatoolStripMenuItem.Checked = false;

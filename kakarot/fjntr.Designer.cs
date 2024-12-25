@@ -320,7 +320,7 @@
             // toolStripComboBox3
             // 
             toolStripComboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
-            toolStripComboBox3.Items.AddRange(new object[] { "Filtro rapido", "Games/MSX1", "Games/MSX2", "Games/MSX2+", "Demos", "Music", "Books" });
+            toolStripComboBox3.Items.AddRange(new object[] { "Filtro rápido", "Games/MSX1", "Games/MSX2", "Games/MSX2+", "Demos", "Music", "Books" });
             toolStripComboBox3.Name = "toolStripComboBox3";
             toolStripComboBox3.Size = new Size(121, 23);
             toolStripComboBox3.SelectedIndexChanged += toolStripComboBox3_SelectedIndexChanged;

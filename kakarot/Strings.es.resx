@@ -135,14 +135,26 @@
   <data name="DescomprimirDespuesDeDescargar" xml:space="preserve">
     <value>Descomprimir despues de descargar</value>
   </data>
+  <data name="EjecutaROM/DSK/CAS/WAV" xml:space="preserve">
+    <value>Ejecuta ROM/DSK/CAS/WAV</value>
+  </data>
+  <data name="EjecutaSeleccionado" xml:space="preserve">
+    <value>Ejecuta Seleccionado</value>
+  </data>
   <data name="EstablecerRutaParaOpenMSX" xml:space="preserve">
     <value>Establecer ruta para OpenMSX</value>
   </data>
+  <data name="FiltroRapido" xml:space="preserve">
+    <value>Filtro rápido</value>
+  </data>
   <data name="Herramientas" xml:space="preserve">
-    <value>Herramientasss</value>
+    <value>Herramientas</value>
   </data>
   <data name="Idioma" xml:space="preserve">
     <value>Idioma</value>
+  </data>
+  <data name="InformarDeActualizaciones" xml:space="preserve">
+    <value>Informar de actualizaciones</value>
   </data>
   <data name="Opciones" xml:space="preserve">
     <value>Opciones</value>
@@ -152,5 +164,8 @@
   </data>
   <data name="Repos" xml:space="preserve">
     <value>Respos</value>
+  </data>
+  <data name="VerNovedades" xml:space="preserve">
+    <value>Ver novedades</value>
   </data>
 </root>
