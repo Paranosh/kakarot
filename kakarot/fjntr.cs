@@ -188,6 +188,7 @@ namespace kakarot
                             int a = 0;
                             string FechaDelUltimoArchivoFJ = "", FechaEnLaQueSeMiro = "";
                             var LasDosFechas = ConfigurationManager.AppSettings["UltimoCheckNovedadesFileHunter"].ToString();
+                            if (!LasDosFechas.Contains("|")) return;
                             string[] array = LasDosFechas.Split('|');
                             foreach (string value in array)
                             {
@@ -206,10 +207,6 @@ namespace kakarot
                                     // do something
                                    verNovedadesToolStripMenuItem.PerformClick();
                                 }
-
-
-
-
                                 //MessageBox.Show("Hay nuevos archivos en filehunter desde la ultima vez que miraste, recuerda de ir a ver las novedades para que este mensaje deje de salir", "Novedades", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
@@ -519,19 +516,14 @@ namespace kakarot
                     }
                 }, "EjecutaROMDSKCASWAV");
             }
-
-
-
             if (Directory.GetFiles(Application.StartupPath + "\\launcher").Length > 0)
             {
-             
                 Launcher = AddMenuItem(contextMenuStrip1, "Launcher", 9, false, "LaunchApps");
                 foreach (string file in Directory.GetFiles(Application.StartupPath + "\\launcher"))
                 {
                     string Shortfile = Path.GetFileNameWithoutExtension(file);
                     AddSubMenuItemToolStrip(Launcher, Shortfile, false, clickedItem =>
                     {
-
                         ProcessStartInfo psi = new ProcessStartInfo();
                         psi.CreateNoWindow = true;
                         psi.UseShellExecute = false;
