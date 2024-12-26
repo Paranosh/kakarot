@@ -10,6 +10,7 @@ using System.Text;
 using System.Reflection;
 using Konamiman.JoySerTrans;
 using System.Globalization;
+using System.IO;
 
 
 namespace kakarot
@@ -197,7 +198,20 @@ namespace kakarot
                             //miramos si el listbox tiene un archivo con fecha posterior a FechaUltimoArchivoFJ
                             DateTime dt1 = DateTime.ParseExact(FechaDelUltimoArchivoFJ, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                             DateTime dt2 = DateTime.ParseExact(fechaultimaactualizacion, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-                            if (dt2 > dt1) MessageBox.Show("Hay nuevos archivos en filehunter desde la ultima vez que miraste, recuerda de ir a ver las novedades para que este mensaje deje de salir", "Novedades", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            if (dt2 > dt1)
+                            {
+                                var userResult = AutoClosingMessageBox.Show("Hay novedades en File-hunter, ¿Deseas verlas?", "Updates", 500, MessageBoxButtons.YesNo);
+                                if (userResult == System.Windows.Forms.DialogResult.Yes)
+                                {
+                                    // do something
+                                   verNovedadesToolStripMenuItem.PerformClick();
+                                }
+
+
+
+
+                                //MessageBox.Show("Hay nuevos archivos en filehunter desde la ultima vez que miraste, recuerda de ir a ver las novedades para que este mensaje deje de salir", "Novedades", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
                         }
                     }
                     if (ContadorDescargas == 2)
@@ -515,7 +529,6 @@ namespace kakarot
                 foreach (string port in comPorts)
                 {
                     // Mostrar cada puerto COM disponible
-                    // MessageBox.Show($"Puerto COM encontrado: {port}");
                     toolStripComboBox2.Items.Add(port);
                 }
             }

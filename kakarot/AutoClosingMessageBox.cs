@@ -1,9 +1,18 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace kakarot
 {
-    internal class AutoClosingMessageBox
+    //No esta funcionando en net CORE, revisar!!
+//    var userResult = AutoClosingMessageBox.Show("Fichero creado correctamente", "OK", 1000, MessageBoxButtons.OK);
+//                            if (userResult == System.Windows.Forms.DialogResult.OK)
+//                            {
+//                                // do something
+//                                LanzaDescargado(directorio + Compartida.NombreArchivo + "." + extension);
+//}
+
+internal class AutoClosingMessageBox
     {
         System.Threading.Timer _timeoutTimer;
         string _caption;
