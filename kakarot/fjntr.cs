@@ -28,7 +28,7 @@ namespace kakarot
         static long fileLength;
         static long bytesSent;
         static string filenameSent;
-        ToolStripMenuItem OpenMSX;
+        ToolStripMenuItem OpenMSX, Launcher;
         WebBrowser webBrowser = new WebBrowser();
         Dictionary<string, string> dictionary = new Dictionary<string, string>();
         string PathOpenMSX, TipoDeMApper, acumulador = "";
@@ -408,6 +408,7 @@ namespace kakarot
             ConfigureListBoxAppearance(listBox1);
             if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
             if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
+            if (!Directory.Exists(Application.StartupPath + "\\launcher")) Directory.CreateDirectory(Application.StartupPath + "\\launcher");
             //iniciacilzamos config...
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             //chuleta
@@ -481,7 +482,6 @@ namespace kakarot
                 {
                     TipoDeMApper = selectedItem;
                     MessageBox.Show("Se forzará en OpenMSX el tipo de mapper " + selectedItem, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    // MessageBox.Show($"Seleccionaste: {selectedItem}");
                 }, true);
                 AddSubMenuItemToolStrip(OpenMSX, "Ejecuta ROM/DSK/CAS/WAV", false, clickedItem =>
                 {
@@ -519,6 +519,30 @@ namespace kakarot
                     }
                 }, "EjecutaROMDSKCASWAV");
             }
+
+
+
+            if (Directory.GetFiles(Application.StartupPath + "\\launcher").Length > 0)
+            {
+             
+                Launcher = AddMenuItem(contextMenuStrip1, "Launcher", 9, false, "LaunchApps");
+                foreach (string file in Directory.GetFiles(Application.StartupPath + "\\launcher"))
+                {
+                    string Shortfile = Path.GetFileNameWithoutExtension(file);
+                    AddSubMenuItemToolStrip(Launcher, Shortfile, false, clickedItem =>
+                    {
+
+                        ProcessStartInfo psi = new ProcessStartInfo();
+                        psi.CreateNoWindow = true;
+                        psi.UseShellExecute = false;
+                        psi.FileName = file;
+                        //   psi.Arguments = "-" + argumentos + argumentoCompresion + " tmp.DSK " + Application.StartupPath + "\\tmp.ROM";
+                        var p = Process.Start(psi);
+                        p.WaitForExit();
+                    }, "EjecutaSelecionadoLauncher" + Shortfile);
+                }
+            }
+
             descomprimirDespuesDeDescargarToolStripMenuItem.Checked = bool.Parse(ConfigurationManager.AppSettings["DescomprimirDespuesdeDescargar"]);
             //listamos los puertos com si existen en el equipo si no devolvera la palabra null
             string[] comPorts = SerialPort.GetPortNames();
