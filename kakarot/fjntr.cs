@@ -14,6 +14,11 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Security.Policy;
 using System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Windows.Forms;
+using System.Net.Http.Headers;
 
 
 namespace kakarot
@@ -47,6 +52,7 @@ namespace kakarot
         private System.Windows.Forms.Timer clipboardMonitorTimer;
         private string lastClipboardText = string.Empty;
         int ContadorDescargas = 0;
+        string memoriarutas = "", nivelAnterior = "", nivelAnteriorPre = "", nivelActual = "";
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
             // Restaurar la ventana al hacer doble clic en el ícono
@@ -97,7 +103,8 @@ namespace kakarot
             panel1.Top = this.ClientSize.Height - panel1.Height - 50; // 10px de margen inferior
             listBox1.Width = this.ClientSize.Width;
             listBox1.Height = this.ClientSize.Height - 20;
-
+            listBox2.Width = this.ClientSize.Width;
+            listBox2.Height = this.ClientSize.Height - 20;
             if (this.WindowState == FormWindowState.Minimized)
             {
                 // Mostrar el ícono en la bandeja del sistema
@@ -194,7 +201,7 @@ namespace kakarot
                                 var userResult = AutoClosingMessageBox.Show("Hay novedades en File-hunter, ¿Deseas verlas?", "Updates", 500, MessageBoxButtons.YesNo);
                                 if (userResult == System.Windows.Forms.DialogResult.Yes)
                                 {
-                                   verNovedadesToolStripMenuItem.PerformClick();
+                                    verNovedadesToolStripMenuItem.PerformClick();
                                 }
                             }
                         }
@@ -239,7 +246,7 @@ namespace kakarot
                 CheckOnClick = false,
                 Checked = false
             };
-            newItem.Name = Name;   
+            newItem.Name = Name;
             // Asociar un evento Click al ToolStripMenuItem
             newItem.Click += (sender, e) =>
             {
@@ -312,12 +319,21 @@ namespace kakarot
                 {
                     // MessageBox.Show($"¡Hiciste clic en el subitem: {clickedSubItem.Text}!");
                     // if (clickedSubItem.Text == "Lanza OpenMSX") { MessageBox.Show(""); }
+                    foreach (ToolStripMenuItem item in parentItem.DropDownItems) { item.Checked = false; }
+                    subItem.Checked = true;
+
                     clickedItem?.Invoke(true);
                 }
             };
 
             // Agregar el subitem al elemento principal
             parentItem.DropDownItems.Add(subItem);
+
+
+
+
+
+
             if (Addseparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
             return subItem; // Retornar el subitem creado
         }
@@ -381,11 +397,11 @@ namespace kakarot
             ConcatoolStripMenuItem.Text = kakarot.Strings.Concatenar;
             descomprimirDespuesDeDescargarToolStripMenuItem.Text = kakarot.Strings.DescomprimirDespuesDeDescargar;
             SetOpenMSXPathtoolStripMenuItem.Text = kakarot.Strings.EstablecerRutaParaOpenMSX;
-            permitirMultiplesInstanciasToolStripMenuItem.Text= kakarot.Strings.PermitirMultiplesInstancias;
+            permitirMultiplesInstanciasToolStripMenuItem.Text = kakarot.Strings.PermitirMultiplesInstancias;
             IdiomaMenuItem.Text = kakarot.Strings.Idioma;
             verNovedadesToolStripMenuItem.Text = kakarot.Strings.VerNovedades;
             informarDeActualizacionesToolStripMenuItem.Text = kakarot.Strings.InformarDeActualizaciones;
-            if (PathOpenMSX is not null) 
+            if (PathOpenMSX is not null)
             {
                 if (OpenMSX is ToolStripMenuItem menuItem && menuItem.DropDownItems.Count > 0)
                 {
@@ -419,6 +435,17 @@ namespace kakarot
                     {
                         Process.Start(new ProcessStartInfo(laUrl) { UseShellExecute = true });
                     }, laUrl);
+                }
+            }
+            var ClavesAppConfig = ConfigurationManager.AppSettings;
+            foreach (string _clave in ClavesAppConfig.AllKeys)
+            {
+                if (_clave.ToLower().Contains("githubrepo"))
+                {
+                    AddSubMenuItemToolStrip(reposToolStripMenuItem, _clave, false, clickedItem =>
+                    {
+                        Preparalistbox2(ClavesAppConfig.Get(_clave));
+                    }, "lanza"+ ClavesAppConfig.Get(_clave));
                 }
             }
             //iniciacilzamos config...
@@ -488,7 +515,7 @@ namespace kakarot
 
                         }
                     }
-                },"EjecutaSelecionado");
+                }, "EjecutaSelecionado");
                 AddComboBoxSubItem("Mappers", OpenMSX, new string[] { "Mapper Auto", "Konami 5", "Konami 4", "ASCII 16", "ASCII 8" }
                 , selectedItem =>
                 {
@@ -627,7 +654,7 @@ namespace kakarot
             }
 
         }
-       
+
         private void ApplyFilter(string filterText, object target, DataTable _dataTable = null)
         {
             try
@@ -968,6 +995,52 @@ namespace kakarot
                 if (listBox1.SelectedItem != null)
                 {
                     listBox1_DoubleClick(sender, e);
+                }
+            }
+            if (IsControlVisible(listBox2))
+            {
+                if (listBox2.SelectedItem.ToString().StartsWith("DIR:"))
+                {
+                    MessageBox.Show("No es posible descargar directorios", "Informacion",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                    return;
+                }
+                if (listBox2.SelectedItem.ToString().StartsWith("\\.") || listBox2.SelectedItem.ToString().StartsWith("\\..")) { return; }
+                using (var fbd = new FolderBrowserDialog())
+                {
+                    DialogResult result = fbd.ShowDialog();
+                    if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                    {
+                        toolStripStatusLabel1.Text = "-Descargando, por favor espere-";
+                        string folder = fbd.SelectedPath;
+                        // string NoeEncUrl = UrlEncode(listBox1.SelectedItem.ToString().Substring(2, listBox1.SelectedItem.ToString().Length - 2)).Replace("\\", "/").Replace(" ", "%20");
+                        string url = listBox2.SelectedItem.ToString();
+                        string decodedUrl = Uri.UnescapeDataString(listBox2.SelectedItem.ToString().Replace("DIR:", "").Replace("?ref=main", ""));
+                        string fileName = decodedUrl.Substring(decodedUrl.LastIndexOf("/") + 1, (decodedUrl.Length - 1) - decodedUrl.LastIndexOf("/"));
+                        if (url.EndsWith("yaml"))
+                        {
+                            url = yamlToURLDown(url).Trim();
+                            fileName = url.Substring(url.LastIndexOf("/") + 1, (url.Length - 1) - url.LastIndexOf("/"));
+                        }
+                        string tempfile = Path.GetTempFileName();
+                        string strPathnoFilename = Path.GetFileNameWithoutExtension(fileName);
+                        string DestFolfer = folder + "\\" + strPathnoFilename + "\\";
+                        if (Directory.Exists(DestFolfer))
+                        {
+                            DialogResult dialogResult = MessageBox.Show("El directorio de destino ya existe, si pulsa \"SI\" se borrará todo, incluyendo su contenido, ¿esta seguro?", "Advertencia", MessageBoxButtons.YesNo);
+                            if (dialogResult == DialogResult.Yes)
+                            {
+                                Directory.Delete(DestFolfer, true);
+
+                            }
+                            else if (dialogResult == DialogResult.No)
+                            {
+                                MessageBox.Show("Cancelado");
+                                return;
+
+                            }
+                        }
+                        TaskDownloadFileArchivos(fbd.SelectedPath + "\\" + fileName, url, false);
+                    }
                 }
             }
         }
@@ -1559,9 +1632,10 @@ namespace kakarot
             webMSXToolStripMenuItem.Enabled = true;
             toolStripComboBox3.Enabled = true;
             verNovedadesToolStripMenuItem.Enabled = true;
-            toolStripMenuItem4.Checked = false;
+            foreach (ToolStripMenuItem item in reposToolStripMenuItem.DropDownItems) { item.Checked = false; }
             filehunterToolStripMenuItem.Checked = true;
             listBox1.Visible = false;
+            listBox2.Visible = false;
             dataGridView1.BringToFront();
             dataGridView1.Visible = true;
             panel1.BringToFront();
@@ -1577,9 +1651,10 @@ namespace kakarot
             webMSXToolStripMenuItem.Enabled = false;
             toolStripComboBox3.Enabled = false;
             verNovedadesToolStripMenuItem.Enabled = false;
-            filehunterToolStripMenuItem.Checked = false;
-            toolStripMenuItem4.Checked = true;
+            foreach (ToolStripMenuItem item in reposToolStripMenuItem.DropDownItems) { item.Checked = false; }
+            MSXScanstoolStripMenuItem4.Checked = true;
             dataGridView1.Visible = false;
+            listBox2.Visible = false;
             listBox1.BringToFront();
             panel1.BringToFront();
             listBox1.Visible = true;
@@ -1915,7 +1990,7 @@ namespace kakarot
                     File.WriteAllLines(Application.StartupPath + "\\favoritos.fav", Array.FindAll(urls, u => !u.Equals(url, StringComparison.OrdinalIgnoreCase)));
                     MessageBox.Show("URL eliminada.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Clipboard.Clear();
-                    RemoveSubMenuItemToolStrip(Favoritos,url);
+                    RemoveSubMenuItemToolStrip(Favoritos, url);
                 }
             }
             else
@@ -1942,9 +2017,9 @@ namespace kakarot
                     }, url);
 
                 }
-                
+
             }
-            this.TopMost = false;           
+            this.TopMost = false;
         }
         private void InitializeClipboardMonitor()
         {
@@ -1969,6 +2044,275 @@ namespace kakarot
                 }
             }
         }
+        private void GhLevel1Async(string repo)
+        {
+            string contenido = "";
+            //Dalekamistoso/MFC-PUBLIC
+            //https://api.github.com/repos/markheath/azure-deploy-manage-containers/contents
+            //https://api.github.com/repos/Dalekamistoso/MFC-PUBLIC/contents
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36");
+                var contentsUrl = repo;// $"https://api.github.com/repos/{repo}/contents/";
+                var contentsJson = await httpClient.GetStringAsync(contentsUrl);
+                var contents = (JArray)JsonConvert.DeserializeObject(contentsJson);
+                foreach (var file in contents)
+                {
+                    var fileType = (string)file["type"];
+                    if (fileType == "dir")
+                    {
+                        var directoryContentsUrl = (string)file["url"];
+                        // use this URL to list the contents of the folder
+                        contenido += ($"DIR:{directoryContentsUrl}\r\n");
+                    }
+                    else if (fileType == "file")
+                    {
+                        var downloadUrl = (string)file["download_url"];
+                        // use this URL to download the contents of the file
+                        contenido += ($"{downloadUrl}\r\n");
+                    }
+                }
+
+            }).ContinueWith(t => acabado(contenido));
+        }
+        private void GhLevel2Async(string repo)
+        {
+            string contenido = "";
+            //https://api.github.com/repos/markheath/azure-deploy-manage-containers/contents
+            //https://api.github.com/repos/Dalekamistoso/MFC-PUBLIC/contents
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                Random rnd = new Random();
+                int uno = rnd.Next(100, 714);  // creates a number between 1 and 12
+                int dos = rnd.Next(100, 414);   // creates a number between 1 and 6
+                var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(uno.ToString(), dos.ToString()));
+                //var contentsUrl = $"https://api.github.com/repos/{repo}/contents/";
+                var contentsUrl = $"{repo}";
+                var contentsJson = await httpClient.GetStringAsync(contentsUrl);
+                var contents = (JArray)JsonConvert.DeserializeObject(contentsJson);
+                foreach (var file in contents)
+                {
+                    var fileType = (string)file["type"];
+                    if (fileType == "dir")
+                    {
+                        var directoryContentsUrl = (string)file["url"];
+                        // use this URL to list the contents of the folder
+                        contenido += ($"DIR:{directoryContentsUrl}\r\n");
+                    }
+                    else if (fileType == "file")
+                    {
+                        var downloadUrl = (string)file["download_url"];
+                        // use this URL to download the contents of the file
+                        contenido += ($"{downloadUrl}\r\n");
+                    }
+                }
+
+            }).ContinueWith(t => acabado(contenido));
+
+        }
+        private void acabado(string resultado)
+        {
+            this.Invoke((System.Windows.Forms.MethodInvoker)(() => listBox2.Items.Add("\\.")));
+            this.Invoke((System.Windows.Forms.MethodInvoker)(() => listBox2.Items.Add("\\..")));
+            string[] lines = resultado.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
+            {
+                if (line.Trim() != "") this.Invoke((System.Windows.Forms.MethodInvoker)(() => listBox2.Items.Add(line)));
+            }
+
+        }
+        private void Preparalistbox2(string urlrepo)
+        {
+            listBox2.Items.Clear();
+            ConfigureListBoxAppearance(listBox2);
+            if (PathOpenMSX is not null) OpenMSX.Enabled = false;
+            if (listBox2.SelectedIndex == -1) listBox1.SelectedIndex = 0;
+            toolStripStatusLabel1.Text = "Total de archivos: " + listBox2.Items.Count.ToString();
+            webMSXToolStripMenuItem.Enabled = false;
+            toolStripComboBox3.Enabled = false;
+            verNovedadesToolStripMenuItem.Enabled = false;
+            MSXScanstoolStripMenuItem4.Checked = false;
+            dataGridView1.Visible = false;
+            listBox1.Visible = false;
+            listBox2.BringToFront();
+            panel1.BringToFront();
+            listBox2.Visible = true;
+            GhLevel1Async(urlrepo);
+        }
+
+        private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox2.SelectedItem != null)
+            {
+                if (listBox2.SelectedItem.ToString() != ("\\.") && listBox2.SelectedItem.ToString() != ("\\.."))
+                {
+                    string decodedUrl = Uri.UnescapeDataString(listBox2.SelectedItem.ToString().Replace("DIR:", "").Replace("?ref=main", ""));
+                    if (!InvokeRequired)
+                    {
+                        toolStripStatusLabel1.Text = "GitHub " + decodedUrl.Substring(decodedUrl.LastIndexOf("/") + 1, (decodedUrl.Length - 1) - decodedUrl.LastIndexOf("/"));
+                    }
+                    else
+                    {
+                        this.Invoke((System.Windows.Forms.MethodInvoker)(() => toolStripStatusLabel1.Text = "GitHub " + decodedUrl));
+                    }
+                }
+            }
+        }
+
+        private void listBox2_DoubleClick(object sender, EventArgs e)
+        {
+            if (listBox2.SelectedItem != null)
+            {
+                if (listBox2.SelectedItem.ToString() == ("\\."))
+                {
+                    memoriarutas = "";
+                    nivelAnterior = "";
+                    nivelAnteriorPre = "";
+                    nivelActual = "";
+                    listBox2.Items.Clear();
+                    GhLevel1Async("https://api.github.com/repos/Dalekamistoso/MFC-PUBLIC/contents");
+                    return;
+                }
+                if (listBox2.SelectedItem.ToString() == ("\\.."))
+                {
+                    //Subimos un nivel
+                    int i = -1;
+                    string[] Coincidencias = memoriarutas.Split(new string[] { "|_|" }, StringSplitOptions.None);
+                    foreach (string line in Coincidencias)
+                    {
+                        i++;
+                    }
+                    if (memoriarutas != "" && i > 1)
+                    {
+                        nivelActual = memoriarutas.Substring(memoriarutas.LastIndexOf("|_|"), memoriarutas.Length - memoriarutas.LastIndexOf("|_|"));
+                        nivelAnteriorPre = memoriarutas.Replace(nivelActual, "");
+                        nivelAnterior = nivelAnteriorPre.Substring(nivelAnteriorPre.LastIndexOf("|_|"), nivelAnteriorPre.Length - nivelAnteriorPre.LastIndexOf("|_|"));
+                        memoriarutas = memoriarutas.Replace(nivelActual, "");
+                        listBox2.Items.Clear();
+                        GhLevel2Async(nivelAnterior.Replace("DIR:", "").Replace("|_|", ""));
+                    }
+                    else
+                    {
+                        memoriarutas = "";
+                        nivelAnterior = "";
+                        nivelAnteriorPre = "";
+                        nivelActual = "";
+                        listBox2.Items.Clear();
+                        GhLevel1Async("https://api.github.com/repos/Dalekamistoso/MFC-PUBLIC/contents");
+                    }
+                    return;
+                }
+
+                else
+                {
+                    if (listBox2.SelectedItem.ToString().StartsWith("DIR:"))
+                    {
+                        GhLevel2Async(listBox2.SelectedItem.ToString().Replace("DIR:", ""));
+                        memoriarutas += "|_|" + listBox2.SelectedItem.ToString();
+                        listBox2.Items.Clear();
+                    }
+                    else
+                    {
+                        using (var fbd = new FolderBrowserDialog())
+                        {
+                            DialogResult result = fbd.ShowDialog();
+                            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                            {
+                                toolStripStatusLabel1.Text = "-Descargando, por favor espere-";
+                                string folder = fbd.SelectedPath;
+                                // string NoeEncUrl = UrlEncode(listBox1.SelectedItem.ToString().Substring(2, listBox1.SelectedItem.ToString().Length - 2)).Replace("\\", "/").Replace(" ", "%20");
+                                string url = listBox2.SelectedItem.ToString();
+                                string decodedUrl = Uri.UnescapeDataString(listBox2.SelectedItem.ToString().Replace("DIR:", "").Replace("?ref=main", ""));
+                                string fileName = decodedUrl.Substring(decodedUrl.LastIndexOf("/") + 1, (decodedUrl.Length - 1) - decodedUrl.LastIndexOf("/"));
+                                if (url.EndsWith("yaml"))
+                                {
+                                    url = yamlToURLDown(url).Trim();
+                                    fileName = url.Substring(url.LastIndexOf("/") + 1, (url.Length - 1) - url.LastIndexOf("/"));
+                                }
+                                string tempfile = Path.GetTempFileName();
+                                string strPathnoFilename = Path.GetFileNameWithoutExtension(fileName);
+                                string DestFolfer = folder + "\\" + strPathnoFilename + "\\";
+                                if (Directory.Exists(DestFolfer))
+                                {
+                                    DialogResult dialogResult = MessageBox.Show("El directorio de destino ya existe, si pulsa \"SI\" se borrará todo, incluyendo su contenido, ¿esta seguro?", "Advertencia", MessageBoxButtons.YesNo);
+                                    if (dialogResult == DialogResult.Yes)
+                                    {
+                                        Directory.Delete(DestFolfer, true);
+
+                                    }
+                                    else if (dialogResult == DialogResult.No)
+                                    {
+                                        MessageBox.Show("Cancelado");
+                                        return;
+
+                                    }
+                                }
+                                TaskDownloadFileArchivos(fbd.SelectedPath+"\\"+fileName,url, false);
+                            }
+                        }
+
+
+                    }
+                }
+            }
+        }
+        private string yamlToURLDown(string urlyaml)
+        {
+            string strContent = "";
+            var webRequest = WebRequest.Create(urlyaml);
+            using (var response = webRequest.GetResponse())
+            using (var content = response.GetResponseStream())
+            using (var reader = new StreamReader(content))
+            {
+                strContent = reader.ReadToEnd();
+            }
+
+            // yml = "---\r\nname: '1937'\r\nversion: '1.0'\r\nrelease: 1\r\nsummary: '1937 (MSXdev''22)'\r\nauthor: 'joesg'\r\npackage_author: 'Carles Amigó (fr3nd)'\r\nlicense: 'Freeware'\r\ncategory: 'Games'\r\nsystem: 'MSX'\r\nrequirements:\r\n  - 'ROM'\r\nurl: 'https://www.msxdev.org/2022/10/04/msxdev22-30-1937/'\r\ndescription: |\r\n  # 1937\r\n\r\n  The game is about a kid that tries to escape from the horror.\r\ninstalldir: '\\1937'\r\nfiles:\r\n  - 1937.zip: 'https://www.msxdev.org/wp-content/uploads/2022/10/MSXdev22_1937_v1.0.zip'\r\nbuild: |\r\n  mkdir -p package/\r\n  unzip 1937.zip\r\n  mv \"MSXdev22_1937_v1.0_eng.rom\" package/1937.ROM\r\n  cat > package/1937.BAT << EOF\r\n  REM Look for SROM.COM in default dir\r\n  IFF EXIST %_DISK%:\\SOFAROM\\SROM.COM\r\n    %_DISK%:\\SOFAROM\\SROM.COM 1937.ROM\r\n  ELSE\r\n    REM Try to run it from path\r\n    IFF EXIST SROM.COM\r\n      SROM.COM 1937.ROM\r\n    ELSE\r\n      echo \"SROM.COM not found. Install it with: 'HUB install SOFAROM'\"\r\n      exit 1\r\n    ENDIFF\r\n  ENDIFF\r\n  EOF\r\n  unix2dos package/1937.BAT\r\nchangelog: |\r\n  - 1.0-1 2022-10-11\r\n    - First release";
+            string[] lines = strContent.Split(new string[] { "files:" }, StringSplitOptions.None);
+            int a = 0;
+            foreach (string value in lines)
+            {
+                a++;
+                if (a == 2)
+                {
+                    int b = 0;
+                    //MessageBox.Show(value.Substring(0, value.IndexOf("build:")));
+                    string casi = value.Substring(0, value.IndexOf("build:"));
+                    string[] array = casi.Split(new string[] { "'" }, StringSplitOptions.None);
+                    foreach (string value2 in array)
+                    {
+                        b++;
+                        if (b == 2) return value2;
+                    }
+                }
+            }
+            return "Not found";
+        }
+        static void SetupExclusiveCheckHandler(ToolStripMenuItem parentItem)
+        {
+            foreach (ToolStripItem item in parentItem.DropDownItems)
+            {
+                if (item is ToolStripMenuItem menuItem)
+                {
+                    menuItem.Click += (sender, e) =>
+                    {
+                        // Desmarcar todos los demás elementos del mismo nivel
+                        foreach (ToolStripItem sibling in parentItem.DropDownItems)
+                        {
+                            if (sibling is ToolStripMenuItem siblingMenuItem)
+                            {
+                                siblingMenuItem.Checked = false;
+                            }
+                        }
+
+                        // Marcar el elemento actual
+                        menuItem.Checked = true;
+                    };
+                }
+            }
+        }
     }
 }
 
@@ -1986,3 +2330,4 @@ internal class SectorData
     public byte[] Data { get; set; }
     public int Size { get; set; }
 }
+
