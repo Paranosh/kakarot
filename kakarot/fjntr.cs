@@ -154,7 +154,7 @@ namespace kakarot
                     if (filename == "Update-Log.txt")
                     {
                         int b = 0;
-                        string fechaultimaactualizacion = "";
+                        string UltimoArchivoActualizado = "";
                         updatelistado = File.ReadAllText("Update-Log.txt");
                         File.Delete(filename);
                         string[] lines = updatelistado.Trim().Split('\n');
@@ -166,7 +166,7 @@ namespace kakarot
                             // Separar los elementos por tabulación
                             string[] parts = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
                             // Crear un objeto FileData si la línea tiene al menos 3 partes
-                            if (b == 0) fechaultimaactualizacion = parts[0].Trim();
+                            if (b == 0) UltimoArchivoActualizado = parts[2].Trim();
                             if (parts.Length >= 3)
                             {
                                 fileListUpdate.Add(new FileData
@@ -182,32 +182,14 @@ namespace kakarot
                         if (bool.Parse(ConfigurationManager.AppSettings["InformaDeActualizacionesFileHunter"]))
                         {
                             informarDeActualizacionesToolStripMenuItem.Checked = true;
-                            //hay que comprobar si existe una actualizacion respecto a la ultima vez que se miro el grid, teniendo en cuenta que si no se ha mirado todavia
-                            //el valor de UltimoCheckNovedadesFileHunter estara en blanco
-                            //a la izquierda la fecha del ultimo archivo actualizado en fh a la derecha la fecha en la que se miro el grid de novedades
-                            int a = 0;
-                            string FechaDelUltimoArchivoFJ = "", FechaEnLaQueSeMiro = "";
-                            var LasDosFechas = ConfigurationManager.AppSettings["UltimoCheckNovedadesFileHunter"].ToString();
-                            if (!LasDosFechas.Contains("|")) return;
-                            string[] array = LasDosFechas.Split('|');
-                            foreach (string value in array)
-                            {
-                                if (a == 0) FechaDelUltimoArchivoFJ = value;
-                                if (a == 1) FechaEnLaQueSeMiro = value;
-                                a++;
-                            }
-                            //miramos si el listbox tiene un archivo con fecha posterior a FechaUltimoArchivoFJ
-                            DateTime dt1 = DateTime.ParseExact(FechaDelUltimoArchivoFJ, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-                            DateTime dt2 = DateTime.ParseExact(fechaultimaactualizacion, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-                            if (dt2 > dt1)
+                            var ultimovisto = ConfigurationManager.AppSettings["UltimoCheckNovedadesFileHunter"].ToString();
+                            if (ultimovisto != UltimoArchivoActualizado)
                             {
                                 var userResult = AutoClosingMessageBox.Show("Hay novedades en File-hunter, ¿Deseas verlas?", "Updates", 500, MessageBoxButtons.YesNo);
                                 if (userResult == System.Windows.Forms.DialogResult.Yes)
                                 {
-                                    // do something
                                    verNovedadesToolStripMenuItem.PerformClick();
                                 }
-                                //MessageBox.Show("Hay nuevos archivos en filehunter desde la ultima vez que miraste, recuerda de ir a ver las novedades para que este mensaje deje de salir", "Novedades", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
                     }
@@ -840,8 +822,7 @@ namespace kakarot
                 dataGridView2.Columns[3].Width = 80;
                 dataGridView2.BringToFront();
                 dataGridView2.Visible = true;
-                //a la izquierda la fecha del ultimo archivo actualizado en fh a la derecha la fecha en la que se miro el grid de novedades
-                config.AppSettings.Settings["UltimoCheckNovedadesFileHunter"].Value = dataGridView2.Rows[0].Cells[0].Value.ToString() + "|" + DateTime.Now.ToShortDateString();
+                config.AppSettings.Settings["UltimoCheckNovedadesFileHunter"].Value = dataGridView2.Rows[0].Cells[4].Value.ToString();
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
             }
