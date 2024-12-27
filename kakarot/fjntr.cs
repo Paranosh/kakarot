@@ -52,7 +52,7 @@ namespace kakarot
         private System.Windows.Forms.Timer clipboardMonitorTimer;
         private string lastClipboardText = string.Empty;
         int ContadorDescargas = 0;
-        string memoriarutas = "", nivelAnterior = "", nivelAnteriorPre = "", nivelActual = "", repoenuso="";
+        string memoriarutas = "", nivelAnterior = "", nivelAnteriorPre = "", nivelActual = "", repoenuso = "";
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
             // Restaurar la ventana al hacer doble clic en el ícono
@@ -306,33 +306,33 @@ namespace kakarot
         /// <param name="parentItem">El elemento principal al cual agregar el subitem.</param>
         /// <param name="subItemText">El texto del subitem.</param>
         /// <returns>El subitem creado.</returns>
-        static ToolStripMenuItem AddSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemText, bool Addseparator, Action<bool> clickedItem, string Name)
+        static ToolStripMenuItem AddSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemText, bool Addseparator, Action<bool> clickedItem, string Name, bool ischeckbox)
         {
 
-                // Crear un nuevo ToolStripMenuItem como subitem
-                ToolStripMenuItem subItem = new ToolStripMenuItem(subItemText);
-                subItem.Name = Name;
-                // Asociar un evento Click al subitem
-                subItem.Click += (sender, e) =>
+            // Crear un nuevo ToolStripMenuItem como subitem
+            ToolStripMenuItem subItem = new ToolStripMenuItem(subItemText);
+            subItem.Name = Name;
+            // Asociar un evento Click al subitem
+            subItem.Click += (sender, e) =>
+            {
+                ToolStripMenuItem clickedSubItem = sender as ToolStripMenuItem;
+                if (clickedSubItem != null)
                 {
-                    ToolStripMenuItem clickedSubItem = sender as ToolStripMenuItem;
-                    if (clickedSubItem != null)
+                    foreach (object item in parentItem.DropDownItems)
                     {
-                        foreach (object item in parentItem.DropDownItems) 
-                        {
-                            ToolStripMenuItem menuItem = item as ToolStripMenuItem;
-                            if (menuItem == null) { continue; }
-                            menuItem.Checked = false; 
-                        }
-                        subItem.Checked = true;
-                        clickedItem?.Invoke(true);
+                        ToolStripMenuItem menuItem = item as ToolStripMenuItem;
+                        if (menuItem == null) { continue; }
+                        menuItem.Checked = false;
                     }
-                };
+                    if (ischeckbox) subItem.Checked = true;
+                    clickedItem?.Invoke(true);
+                }
+            };
 
-                // Agregar el subitem al elemento principal
-                parentItem.DropDownItems.Add(subItem);
-                if (Addseparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
-                return subItem; // Retornar el subitem creado
+            // Agregar el subitem al elemento principal
+            parentItem.DropDownItems.Add(subItem);
+            if (Addseparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
+            return subItem; // Retornar el subitem creado
 
         }
         static bool RemoveSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemName)
@@ -432,7 +432,7 @@ namespace kakarot
                     AddSubMenuItemToolStrip(Favoritos, laUrl, false, clickedItem =>
                     {
                         Process.Start(new ProcessStartInfo(laUrl) { UseShellExecute = true });
-                    }, laUrl);
+                    }, laUrl, false);
                 }
             }
             var ClavesAppConfig = ConfigurationManager.AppSettings;
@@ -443,7 +443,7 @@ namespace kakarot
                     AddSubMenuItemToolStrip(reposToolStripMenuItem, _clave, false, clickedItem =>
                     {
                         Preparalistbox2(ClavesAppConfig.Get(_clave));
-                    }, "lanza"+ ClavesAppConfig.Get(_clave));
+                    }, "lanza" + ClavesAppConfig.Get(_clave), true);
                 }
             }
             //iniciacilzamos config...
@@ -513,7 +513,7 @@ namespace kakarot
 
                         }
                     }
-                }, "EjecutaSelecionado");
+                }, "EjecutaSelecionado", false);
                 AddComboBoxSubItem("Mappers", OpenMSX, new string[] { "Mapper Auto", "Konami 5", "Konami 4", "ASCII 16", "ASCII 8" }
                 , selectedItem =>
                 {
@@ -554,7 +554,7 @@ namespace kakarot
                             MessageBox.Show("Error lanzando " + dlg.FileName, "Error");
                         }
                     }
-                }, "EjecutaROMDSKCASWAV");
+                }, "EjecutaROMDSKCASWAV", false);
             }
             if (Directory.GetFiles(Application.StartupPath + "\\launcher").Length > 0)
             {
@@ -571,7 +571,7 @@ namespace kakarot
                         //   psi.Arguments = "-" + argumentos + argumentoCompresion + " tmp.DSK " + Application.StartupPath + "\\tmp.ROM";
                         var p = Process.Start(psi);
                         p.WaitForExit();
-                    }, "EjecutaSelecionadoLauncher" + Shortfile);
+                    }, "EjecutaSelecionadoLauncher" + Shortfile, false);
                 }
             }
 
@@ -999,7 +999,7 @@ namespace kakarot
             {
                 if (listBox2.SelectedItem.ToString().StartsWith("DIR:"))
                 {
-                    MessageBox.Show("No es posible descargar directorios", "Informacion",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                    MessageBox.Show("No es posible descargar directorios", "Informacion", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 if (listBox2.SelectedItem.ToString().StartsWith("\\.") || listBox2.SelectedItem.ToString().StartsWith("\\..")) { return; }
@@ -2011,7 +2011,7 @@ namespace kakarot
                     AddSubMenuItemToolStrip(Favoritos, url, false, clickedItem =>
                     {
                         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-                    }, url);
+                    }, url, false);
 
                 }
 
@@ -2125,7 +2125,7 @@ namespace kakarot
             repoenuso = urlrepo;
             listBox2.Items.Clear();
             ConfigureListBoxAppearance(listBox2);
-            if (PathOpenMSX is not null) OpenMSX.Enabled = false;
+            // if (PathOpenMSX is not null) OpenMSX.Enabled = false;
             if (listBox2.SelectedIndex == -1) listBox1.SelectedIndex = 0;
             toolStripStatusLabel1.Text = "Total de archivos: " + listBox2.Items.Count.ToString();
             webMSXToolStripMenuItem.Enabled = false;
@@ -2247,7 +2247,7 @@ namespace kakarot
 
                                     }
                                 }
-                                TaskDownloadFileArchivos(fbd.SelectedPath+"\\"+fileName,url, false);
+                                TaskDownloadFileArchivos(fbd.SelectedPath + "\\" + fileName, url, false);
                             }
                         }
 
@@ -2288,7 +2288,11 @@ namespace kakarot
             }
             return "Not found";
         }
-       
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            toolStripStatusLabel1.Text = "MSXScans " + listBox1.SelectedItem.ToString();
+        }
     }
 }
 

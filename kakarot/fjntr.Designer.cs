@@ -192,7 +192,7 @@
             // 
             convertirAToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { dSKROMToolStripMenuItem, toolStripMenuItem3, rOMCASToolStripMenuItem });
             convertirAToolStripMenuItem.Name = "convertirAToolStripMenuItem";
-            convertirAToolStripMenuItem.Size = new Size(180, 22);
+            convertirAToolStripMenuItem.Size = new Size(177, 22);
             convertirAToolStripMenuItem.Text = "Convertir a..";
             // 
             // dSKROMToolStripMenuItem
@@ -219,28 +219,28 @@
             // dragDropdskExploresrToolStripMenuItem
             // 
             dragDropdskExploresrToolStripMenuItem.Name = "dragDropdskExploresrToolStripMenuItem";
-            dragDropdskExploresrToolStripMenuItem.Size = new Size(180, 22);
+            dragDropdskExploresrToolStripMenuItem.Size = new Size(177, 22);
             dragDropdskExploresrToolStripMenuItem.Text = "DragDrop .DSK Ex";
             dragDropdskExploresrToolStripMenuItem.Click += dragDropdskExploresrToolStripMenuItem_Click;
             // 
             // aplicarParcheIPSToolStripMenuItem
             // 
             aplicarParcheIPSToolStripMenuItem.Name = "aplicarParcheIPSToolStripMenuItem";
-            aplicarParcheIPSToolStripMenuItem.Size = new Size(180, 22);
+            aplicarParcheIPSToolStripMenuItem.Size = new Size(177, 22);
             aplicarParcheIPSToolStripMenuItem.Text = "Parchear ROM (IPS)";
             aplicarParcheIPSToolStripMenuItem.Click += aplicarParcheIPSToolStripMenuItem_Click;
             // 
             // ConcatoolStripMenuItem
             // 
             ConcatoolStripMenuItem.Name = "ConcatoolStripMenuItem";
-            ConcatoolStripMenuItem.Size = new Size(180, 22);
+            ConcatoolStripMenuItem.Size = new Size(177, 22);
             ConcatoolStripMenuItem.Text = "Concatenar";
             ConcatoolStripMenuItem.Click += toolStripMenuItem2_Click;
             // 
             // verSHA1ToolStripMenuItem
             // 
             verSHA1ToolStripMenuItem.Name = "verSHA1ToolStripMenuItem";
-            verSHA1ToolStripMenuItem.Size = new Size(180, 22);
+            verSHA1ToolStripMenuItem.Size = new Size(177, 22);
             verSHA1ToolStripMenuItem.Text = "SHA1";
             verSHA1ToolStripMenuItem.Click += verSHA1ToolStripMenuItem_Click;
             // 
@@ -248,7 +248,7 @@
             // 
             EnviarAMSXMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripComboBox2, toolStripComboBox4, enviaArchivoSeleccionadoToolStripMenuItem, enviaArchivoLocalToolStripMenuItem });
             EnviarAMSXMenuItem.Name = "EnviarAMSXMenuItem";
-            EnviarAMSXMenuItem.Size = new Size(180, 22);
+            EnviarAMSXMenuItem.Size = new Size(177, 22);
             EnviarAMSXMenuItem.Text = "Enviar a MSX";
             EnviarAMSXMenuItem.Visible = false;
             // 
@@ -298,7 +298,7 @@
             filehunterToolStripMenuItem.CheckState = CheckState.Checked;
             filehunterToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { verNovedadesToolStripMenuItem, informarDeActualizacionesToolStripMenuItem, toolStripComboBox3 });
             filehunterToolStripMenuItem.Name = "filehunterToolStripMenuItem";
-            filehunterToolStripMenuItem.Size = new Size(180, 22);
+            filehunterToolStripMenuItem.Size = new Size(133, 22);
             filehunterToolStripMenuItem.Text = "File-hunter";
             filehunterToolStripMenuItem.Click += filehunterToolStripMenuItem_Click;
             // 
@@ -330,7 +330,7 @@
             // 
             MSXScanstoolStripMenuItem4.CheckOnClick = true;
             MSXScanstoolStripMenuItem4.Name = "MSXScanstoolStripMenuItem4";
-            MSXScanstoolStripMenuItem4.Size = new Size(180, 22);
+            MSXScanstoolStripMenuItem4.Size = new Size(133, 22);
             MSXScanstoolStripMenuItem4.Text = "MSX-Scans";
             MSXScanstoolStripMenuItem4.Click += toolStripMenuItem4_Click;
             // 
@@ -446,8 +446,8 @@
             // toolStripStatusLabel1
             // 
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(118, 17);
-            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(65, 17);
+            toolStripStatusLabel1.Text = "Iniciando...";
             toolStripStatusLabel1.TextAlign = ContentAlignment.MiddleRight;
             // 
             // statusStrip1
@@ -477,6 +477,7 @@
             listBox1.Size = new Size(864, 559);
             listBox1.TabIndex = 10;
             listBox1.Visible = false;
+            listBox1.SelectedIndexChanged += listBox1_SelectedIndexChanged;
             listBox1.DoubleClick += listBox1_DoubleClick;
             // 
             // listBox2
