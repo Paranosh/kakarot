@@ -1,9 +1,8 @@
-﻿
-using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace TakuLib.DiskAccessLib
+namespace kakarot
 {
     internal class DiskUtils
     {
@@ -21,127 +20,127 @@ namespace TakuLib.DiskAccessLib
           string label,
           [MarshalAs(UnmanagedType.Bool)] bool quickFormat,
           int clusterSize,
-          DiskUtils.FormatCallBackDelegate callBackDelegate);
+          FormatCallBackDelegate callBackDelegate);
 
         [DllImport("kernel32.dll")]
         private static extern uint FormatMessage(
           uint dwFlags,
-          IntPtr lpSource,
+          nint lpSource,
           uint dwMessageId,
           uint dwLanguageId,
           StringBuilder lpBuffer,
           int nSize,
-          IntPtr Arguments);
+          nint Arguments);
 
         [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-        private static extern int SHFileOperation([In] ref DiskUtils.SHFILEOPSTRUCT lpFileOp);
+        private static extern int SHFileOperation([In] ref SHFILEOPSTRUCT lpFileOp);
 
         public static bool IsFloppy2DD(string driveLetter)
         {
             WinIOAPI winIoapi = new WinIOAPI();
-            if (!new DriveInfo(driveLetter.Substring(0, 1)).DriveType.Equals((object)DriveType.Removable))
+            if (!new DriveInfo(driveLetter.Substring(0, 1)).DriveType.Equals(DriveType.Removable))
                 return false;
-            IntPtr num1 = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(WinIOAPI.DISK_GEOMETRY)));
-            string filename = DiskUtils.ConvPhysicalDrive(driveLetter);
+            nint num1 = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(WinIOAPI.DISK_GEOMETRY)));
+            string filename = ConvPhysicalDrive(driveLetter);
             uint OutBufferSize = (uint)Marshal.SizeOf(typeof(WinIOAPI.DISK_GEOMETRY));
             uint BytesReturned = 0;
-            SafeFileHandle file = winIoapi.CreateFile(filename, WinIOAPI.DesiredAccess.DEVICE_ACCESS, WinIOAPI.ShareMode.FILE_SHARE_READ, IntPtr.Zero, WinIOAPI.CreationDisposition.OPEN_EXISTING, (WinIOAPI.FlagsAndAttributes)0, IntPtr.Zero);
-            int num2 = winIoapi.DeviceIoControl(file, WinIOAPI.ControlCodes.IOCTL_DISK_GET_DRIVE_GEOMETRY, IntPtr.Zero, 0U, num1, OutBufferSize, ref BytesReturned, IntPtr.Zero) ? 1 : 0;
+            SafeFileHandle file = winIoapi.CreateFile(filename, WinIOAPI.DesiredAccess.DEVICE_ACCESS, WinIOAPI.ShareMode.FILE_SHARE_READ, nint.Zero, WinIOAPI.CreationDisposition.OPEN_EXISTING, 0, nint.Zero);
+            int num2 = winIoapi.DeviceIoControl(file, WinIOAPI.ControlCodes.IOCTL_DISK_GET_DRIVE_GEOMETRY, nint.Zero, 0U, num1, OutBufferSize, ref BytesReturned, nint.Zero) ? 1 : 0;
             file.Close();
             file.Dispose();
             return num2 != 0 && ((WinIOAPI.DISK_GEOMETRY)Marshal.PtrToStructure(num1, typeof(WinIOAPI.DISK_GEOMETRY))).MediaType == WinIOAPI.MEDIA_TYPE.F3_720_512;
         }
 
-       /*  public bool FormatDisk(
-          string driveLetter,
-          DiskUtils.FormatType formatType,
-          string VolumeLbl,
-          bool QuickFormat = false,
-          bool StartUpDisk = false,
-          ProgressBar prgBar = null)
-        {
-            bool flag = true;
-            switch (formatType)
-            {
-                case DiskUtils.FormatType.MSX_DOS1:
-                case DiskUtils.FormatType.MSX_DOS2:
-                    flag = this.FormatMSX(driveLetter, formatType, VolumeLbl, QuickFormat, StartUpDisk, prgBar);
-                    break;
-            }
-            return flag;
-        }
+        /*  public bool FormatDisk(
+           string driveLetter,
+           DiskUtils.FormatType formatType,
+           string VolumeLbl,
+           bool QuickFormat = false,
+           bool StartUpDisk = false,
+           ProgressBar prgBar = null)
+         {
+             bool flag = true;
+             switch (formatType)
+             {
+                 case DiskUtils.FormatType.MSX_DOS1:
+                 case DiskUtils.FormatType.MSX_DOS2:
+                     flag = this.FormatMSX(driveLetter, formatType, VolumeLbl, QuickFormat, StartUpDisk, prgBar);
+                     break;
+             }
+             return flag;
+         }
 
-       private bool FormatMSX(
-          string driveLetter,
-          DiskUtils.FormatType formatType,
-          string VolumeLbl,
-          bool QuickFormat,
-          bool SysCopy,
-          ProgressBar prgBar = null)
-        {
-            VirtualDisk virtualDisk = new VirtualDisk();
-            string startupPath = Application.StartupPath;
-            string[] strArray = new string[2];
-            if (!startupPath.EndsWith("\\"))
-                startupPath += "\\";
-            if (!SysCopy)
-            {
-                strArray[0] = startupPath + ConfigurationManager.AppSettings["DOS1dskFileName"];
-                strArray[1] = startupPath + ConfigurationManager.AppSettings["DOS2dskFileName"];
-            }
-            else
-            {
-                strArray[0] = Settings.Default.DOS1ImageFile;
-                strArray[1] = Settings.Default.DOS2ImageFile;
-            }
-            string volumeLabeledVdisk = strArray[(int)(formatType - 1U)];
-            if (!File.Exists(volumeLabeledVdisk))
-            {
-                int num = (int)MessageBox.Show(string.Format(Resources.MSGB_FNNFD, (object)volumeLabeledVdisk), "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                return false;
-            }
-            if (formatType.Equals((object)DiskUtils.FormatType.MSX_DOS2) && !VolumeLbl.Equals(string.Empty))
-            {
-                volumeLabeledVdisk = this.CreateVolumeLabeledVDisk(volumeLabeledVdisk, VolumeLbl);
-                if (volumeLabeledVdisk.Equals(string.Empty))
-                {
-                    int num = (int)MessageBox.Show(string.Format(Resources.MSGB_VLFAL, (object)volumeLabeledVdisk), "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    return false;
-                }
-            }
-            int num1 = virtualDisk.VDiskToRDisk(volumeLabeledVdisk, driveLetter, prgBar, !QuickFormat) ? 1 : 0;
-            if (!formatType.Equals((object)DiskUtils.FormatType.MSX_DOS2))
-                return num1 != 0;
-            if (VolumeLbl.Equals(string.Empty))
-                return num1 != 0;
-            File.Delete(volumeLabeledVdisk);
-            return num1 != 0;
-        }*/
-      
+        private bool FormatMSX(
+           string driveLetter,
+           DiskUtils.FormatType formatType,
+           string VolumeLbl,
+           bool QuickFormat,
+           bool SysCopy,
+           ProgressBar prgBar = null)
+         {
+             VirtualDisk virtualDisk = new VirtualDisk();
+             string startupPath = Application.StartupPath;
+             string[] strArray = new string[2];
+             if (!startupPath.EndsWith("\\"))
+                 startupPath += "\\";
+             if (!SysCopy)
+             {
+                 strArray[0] = startupPath + ConfigurationManager.AppSettings["DOS1dskFileName"];
+                 strArray[1] = startupPath + ConfigurationManager.AppSettings["DOS2dskFileName"];
+             }
+             else
+             {
+                 strArray[0] = Settings.Default.DOS1ImageFile;
+                 strArray[1] = Settings.Default.DOS2ImageFile;
+             }
+             string volumeLabeledVdisk = strArray[(int)(formatType - 1U)];
+             if (!File.Exists(volumeLabeledVdisk))
+             {
+                 int num = (int)MessageBox.Show(string.Format(Resources.MSGB_FNNFD, (object)volumeLabeledVdisk), "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                 return false;
+             }
+             if (formatType.Equals((object)DiskUtils.FormatType.MSX_DOS2) && !VolumeLbl.Equals(string.Empty))
+             {
+                 volumeLabeledVdisk = this.CreateVolumeLabeledVDisk(volumeLabeledVdisk, VolumeLbl);
+                 if (volumeLabeledVdisk.Equals(string.Empty))
+                 {
+                     int num = (int)MessageBox.Show(string.Format(Resources.MSGB_VLFAL, (object)volumeLabeledVdisk), "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                     return false;
+                 }
+             }
+             int num1 = virtualDisk.VDiskToRDisk(volumeLabeledVdisk, driveLetter, prgBar, !QuickFormat) ? 1 : 0;
+             if (!formatType.Equals((object)DiskUtils.FormatType.MSX_DOS2))
+                 return num1 != 0;
+             if (VolumeLbl.Equals(string.Empty))
+                 return num1 != 0;
+             File.Delete(volumeLabeledVdisk);
+             return num1 != 0;
+         }*/
+
         private string CreateVolumeLabeledVDisk(string DiskFileName, string VolumeLbl)
         {
             string volumeLabeledVdisk = Path.GetTempPath() + Path.GetFileName(DiskFileName);
             File.Copy(DiskFileName, volumeLabeledVdisk, true);
-            kakarot.DSKFATOperation dskfatOperation = new kakarot.DSKFATOperation(volumeLabeledVdisk);
+            DSKFATOperation dskfatOperation = new DSKFATOperation(volumeLabeledVdisk);
             dskfatOperation.WriteVolumeLabel(VolumeLbl);
             dskfatOperation.Dispose();
             return volumeLabeledVdisk;
         }
 
         private static int FormatCallBack(
-          DiskUtils.CallbackCommand callBackCommand,
+          CallbackCommand callBackCommand,
           int subActionCommand,
-          IntPtr action)
+          nint action)
         {
             switch (callBackCommand)
             {
-                case DiskUtils.CallbackCommand.PROGRESS:
+                case CallbackCommand.PROGRESS:
                     Marshal.ReadInt32(action);
                     break;
-                case DiskUtils.CallbackCommand.DONE:
-                    if (action != IntPtr.Zero)
+                case CallbackCommand.DONE:
+                    if (action != nint.Zero)
                     {
-                        if (Marshal.ReadByte(action) == (byte)1)
+                        if (Marshal.ReadByte(action) == 1)
                         {
                             Console.WriteLine("フォーマット正常終了");
                             break;
@@ -172,50 +171,50 @@ namespace TakuLib.DiskAccessLib
                 EndCylinderNumber = EndCylinderNumber
             };
             uint cb1 = (uint)Marshal.SizeOf(typeof(WinIOAPI.FORMAT_PARAMETERS));
-            IntPtr num1 = Marshal.AllocCoTaskMem((int)cb1);
-            IntPtr ptr = num1;
-            Marshal.StructureToPtr<WinIOAPI.FORMAT_PARAMETERS>(structure, ptr, false);
+            nint num1 = Marshal.AllocCoTaskMem((int)cb1);
+            nint ptr = num1;
+            Marshal.StructureToPtr(structure, ptr, false);
             uint cb2 = (uint)Marshal.SizeOf(typeof(ushort));
-            IntPtr num2 = Marshal.AllocCoTaskMem((int)cb2);
+            nint num2 = Marshal.AllocCoTaskMem((int)cb2);
             uint num3 = 0;
             SafeFileHandle hDevice = hdlFmt;
-            IntPtr lpInBuffer = num1;
+            nint lpInBuffer = num1;
             int BufferSize = (int)cb1;
-            IntPtr lpOutBuffer = num2;
+            nint lpOutBuffer = num2;
             int OutBufferSize = (int)cb2;
             ref uint local = ref num3;
-            IntPtr zero = IntPtr.Zero;
+            nint zero = nint.Zero;
             return winIoapi.DeviceIoControl(hDevice, WinIOAPI.ControlCodes.IOCTL_DISK_FORMAT_TRACKS, lpInBuffer, (uint)BufferSize, lpOutBuffer, (uint)OutBufferSize, ref local, zero);
         }
 
-        private bool FormatWIN(string driveLetter, DiskUtils.FormatType formatType)
+        private bool FormatWIN(string driveLetter, FormatType formatType)
         {
             int mediaFlag = 0;
-            DiskUtils.FormatCallBackDelegate callBackDelegate = new DiskUtils.FormatCallBackDelegate(DiskUtils.FormatCallBack);
-            if (this.geo.MediaType >= WinIOAPI.MEDIA_TYPE.F5_1Pt2_512 && this.geo.MediaType <= WinIOAPI.MEDIA_TYPE.F3_1Pt44_512)
+            FormatCallBackDelegate callBackDelegate = new FormatCallBackDelegate(FormatCallBack);
+            if (geo.MediaType >= WinIOAPI.MEDIA_TYPE.F5_1Pt2_512 && geo.MediaType <= WinIOAPI.MEDIA_TYPE.F3_1Pt44_512)
                 mediaFlag = 8;
-            else if (this.geo.MediaType == WinIOAPI.MEDIA_TYPE.FixedMedia)
+            else if (geo.MediaType == WinIOAPI.MEDIA_TYPE.FixedMedia)
                 mediaFlag = 12;
-            else if (this.geo.MediaType == WinIOAPI.MEDIA_TYPE.RemovableMedia)
+            else if (geo.MediaType == WinIOAPI.MEDIA_TYPE.RemovableMedia)
                 mediaFlag = 11;
-            DiskUtils.FormatEx(driveLetter, mediaFlag, "FAT", "TEST_VOL", false, 0, callBackDelegate);
+            FormatEx(driveLetter, mediaFlag, "FAT", "TEST_VOL", false, 0, callBackDelegate);
             return false;
         }
 
-        public static string ConvPhysicalDrive(string driveLetter) => string.Format("\\\\.\\{0}", (object)driveLetter.Replace("\\", ""));
+        public static string ConvPhysicalDrive(string driveLetter) => string.Format("\\\\.\\{0}", driveLetter.Replace("\\", ""));
 
-        public static bool TrashFile(string FileName, IntPtr hwndPtr)
+        public static bool TrashFile(string FileName, nint hwndPtr)
         {
-            DiskUtils.SHFILEOPSTRUCT lpFileOp;
+            SHFILEOPSTRUCT lpFileOp;
             lpFileOp.hwnd = hwndPtr;
-            lpFileOp.wFunc = DiskUtils.FileFuncFlags.FO_DELETE;
+            lpFileOp.wFunc = FileFuncFlags.FO_DELETE;
             lpFileOp.pFrom = FileName + "\0\0";
             lpFileOp.pTo = "\0\0";
-            lpFileOp.fFlags = DiskUtils.FILEOP_FLAGS.FOF_ALLOWUNDO;
+            lpFileOp.fFlags = FILEOP_FLAGS.FOF_ALLOWUNDO;
             lpFileOp.fAnyOperationsAborted = true;
-            lpFileOp.hNameMappings = IntPtr.Zero;
-            lpFileOp.lpszProgressTitle = (string)null;
-            int num1 = DiskUtils.SHFileOperation(ref lpFileOp);
+            lpFileOp.hNameMappings = nint.Zero;
+            lpFileOp.lpszProgressTitle = null;
+            int num1 = SHFileOperation(ref lpFileOp);
             bool flag;
             if (num1 == 0)
             {
@@ -230,9 +229,9 @@ namespace TakuLib.DiskAccessLib
         }
 
         private delegate int FormatCallBackDelegate(
-          DiskUtils.CallbackCommand callBackCommand,
+          CallbackCommand callBackCommand,
           int subActionCommand,
-          IntPtr action);
+          nint action);
 
         public enum FormatType : uint
         {
@@ -293,16 +292,16 @@ namespace TakuLib.DiskAccessLib
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private struct SHFILEOPSTRUCT
         {
-            public IntPtr hwnd;
-            public DiskUtils.FileFuncFlags wFunc;
+            public nint hwnd;
+            public FileFuncFlags wFunc;
             [MarshalAs(UnmanagedType.LPWStr)]
             public string pFrom;
             [MarshalAs(UnmanagedType.LPWStr)]
             public string pTo;
-            public DiskUtils.FILEOP_FLAGS fFlags;
+            public FILEOP_FLAGS fFlags;
             [MarshalAs(UnmanagedType.Bool)]
             public bool fAnyOperationsAborted;
-            public IntPtr hNameMappings;
+            public nint hNameMappings;
             [MarshalAs(UnmanagedType.LPWStr)]
             public string lpszProgressTitle;
         }

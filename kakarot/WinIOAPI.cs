@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.Text;
 
-namespace TakuLib.DiskAccessLib
+namespace kakarot
 {
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public sealed class WinIOAPI : IDisposable
@@ -24,18 +24,18 @@ namespace TakuLib.DiskAccessLib
         [DllImport("kernel32.dll")]
         private static extern uint FormatMessage(
           uint dwFlags,
-          IntPtr lpSource,
+          nint lpSource,
           uint dwMessageId,
           uint dwLanguageId,
           StringBuilder lpBuffer,
           int nSize,
-          IntPtr Arguments);
+          nint Arguments);
 
         public void Dispose()
         {
         }
 
-        public static string MediaName(WinIOAPI.MEDIA_TYPE g) => new string[26]
+        public static string MediaName(MEDIA_TYPE g) => new string[26]
         {
       "Format is unknown",
       "5.25\", 1.2MB,  512 bytes/sector",
@@ -65,68 +65,68 @@ namespace TakuLib.DiskAccessLib
       "3.5\",   32Mb Floppy"
         }[(int)g];
 
-        public uint APIErrorCode => WinIOAPI._APIErrorCode;
+        public uint APIErrorCode => _APIErrorCode;
 
         public string APIErrorMessage
         {
             get
             {
-                StringBuilder lpBuffer = new StringBuilder((int)byte.MaxValue);
-                int num = (int)WinIOAPI.FormatMessage(4096U, IntPtr.Zero, this.APIErrorCode, 0U, lpBuffer, lpBuffer.Capacity, IntPtr.Zero);
-                WinIOAPI._errorMessage = this.APIErrorCode.ToString("0000000") + ":" + lpBuffer.ToString();
-                return WinIOAPI._errorMessage;
+                StringBuilder lpBuffer = new StringBuilder(byte.MaxValue);
+                int num = (int)FormatMessage(4096U, nint.Zero, APIErrorCode, 0U, lpBuffer, lpBuffer.Capacity, nint.Zero);
+                _errorMessage = APIErrorCode.ToString("0000000") + ":" + lpBuffer.ToString();
+                return _errorMessage;
             }
         }
 
         [DllImport("kernel32.dll", EntryPoint = "CreateFile", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         private static extern SafeFileHandle _CreateFile(
           [MarshalAs(UnmanagedType.LPTStr)] string filename,
-          [MarshalAs(UnmanagedType.U4)] WinIOAPI.DesiredAccess access,
-          [MarshalAs(UnmanagedType.U4)] WinIOAPI.ShareMode share,
-          IntPtr securityAttributes,
-          [MarshalAs(UnmanagedType.U4)] WinIOAPI.CreationDisposition creationDisposition,
-          [MarshalAs(UnmanagedType.U4)] WinIOAPI.FlagsAndAttributes flagsAndAttributes,
-          IntPtr templateFile);
+          [MarshalAs(UnmanagedType.U4)] DesiredAccess access,
+          [MarshalAs(UnmanagedType.U4)] ShareMode share,
+          nint securityAttributes,
+          [MarshalAs(UnmanagedType.U4)] CreationDisposition creationDisposition,
+          [MarshalAs(UnmanagedType.U4)] FlagsAndAttributes flagsAndAttributes,
+          nint templateFile);
 
         public SafeFileHandle CreateFile(
           string filename,
-          WinIOAPI.DesiredAccess access,
-          WinIOAPI.ShareMode share,
-          IntPtr securityAttribute,
-          WinIOAPI.CreationDisposition creationDisposition,
-          WinIOAPI.FlagsAndAttributes flagsAndAttributes,
-          IntPtr templateFile)
+          DesiredAccess access,
+          ShareMode share,
+          nint securityAttribute,
+          CreationDisposition creationDisposition,
+          FlagsAndAttributes flagsAndAttributes,
+          nint templateFile)
         {
-            SafeFileHandle file = WinIOAPI._CreateFile(filename, access, share, securityAttribute, creationDisposition, flagsAndAttributes, templateFile);
-            return !file.IsInvalid ? file : throw new WinIOAPI.APICallException("CreateFile 呼び出しでエラーが発生しました。" + this.APIErrorMessage);
+            SafeFileHandle file = _CreateFile(filename, access, share, securityAttribute, creationDisposition, flagsAndAttributes, templateFile);
+            return !file.IsInvalid ? file : throw new APICallException("CreateFile 呼び出しでエラーが発生しました。" + APIErrorMessage);
         }
 
         [DllImport("kernel32.dll", EntryPoint = "DeviceIoControl", CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool _DeviceIoControl(
           SafeFileHandle hDevice,
-          [MarshalAs(UnmanagedType.U4)] WinIOAPI.ControlCodes dwIOControlCode,
-          IntPtr lpInBuffer,
+          [MarshalAs(UnmanagedType.U4)] ControlCodes dwIOControlCode,
+          nint lpInBuffer,
           uint nInBufferSize,
-          IntPtr lpOutBuffer,
+          nint lpOutBuffer,
           uint nOutBufferSize,
           out uint lpBytesReturned,
-          IntPtr lpOverlapped);
+          nint lpOverlapped);
 
         public bool DeviceIoControl(
           SafeFileHandle hDevice,
-          WinIOAPI.ControlCodes ControlCode,
-          IntPtr lpInBuffer,
+          ControlCodes ControlCode,
+          nint lpInBuffer,
           uint BufferSize,
-          IntPtr lpOutBuffer,
+          nint lpOutBuffer,
           uint OutBufferSize,
           ref uint BytesReturned,
-          IntPtr lpOverlapped)
+          nint lpOverlapped)
         {
-            int num = WinIOAPI._DeviceIoControl(hDevice, ControlCode, lpInBuffer, BufferSize, lpOutBuffer, OutBufferSize, out BytesReturned, lpOverlapped) ? 1 : 0;
+            int num = _DeviceIoControl(hDevice, ControlCode, lpInBuffer, BufferSize, lpOutBuffer, OutBufferSize, out BytesReturned, lpOverlapped) ? 1 : 0;
             if (num != 0)
                 return num != 0;
-            WinIOAPI._APIErrorCode = (uint)Marshal.GetLastWin32Error();
+            _APIErrorCode = (uint)Marshal.GetLastWin32Error();
             return num != 0;
         }
 
@@ -137,19 +137,19 @@ namespace TakuLib.DiskAccessLib
           byte[] aBuffer,
           uint numerOfByteToWrite,
           ref uint numberOfByteWrittten,
-          IntPtr Overlapped);
+          nint Overlapped);
 
         public bool WriteFile(
           SafeFileHandle hFile,
           byte[] aBuffer,
           uint numberOfByteToWrite,
           ref uint numberOfByteWritten,
-          IntPtr Overlapped)
+          nint Overlapped)
         {
-            int num = WinIOAPI._WriteFile(hFile, aBuffer, numberOfByteToWrite, ref numberOfByteWritten, Overlapped) ? 1 : 0;
+            int num = _WriteFile(hFile, aBuffer, numberOfByteToWrite, ref numberOfByteWritten, Overlapped) ? 1 : 0;
             if (num != 0)
                 return num != 0;
-            WinIOAPI._APIErrorCode = (uint)Marshal.GetLastWin32Error();
+            _APIErrorCode = (uint)Marshal.GetLastWin32Error();
             return num != 0;
         }
 
@@ -160,19 +160,19 @@ namespace TakuLib.DiskAccessLib
           byte[] aBuffer,
           uint numerOfByteToRead,
           ref uint numberOfByteRead,
-          IntPtr Overlapped);
+          nint Overlapped);
 
         public bool ReadFile(
           SafeFileHandle hFile,
           byte[] aBuffer,
           uint numberOfByteToRead,
           ref uint numberOfByteRead,
-          IntPtr Overlapped)
+          nint Overlapped)
         {
-            int num = WinIOAPI._ReadFile(hFile, aBuffer, numberOfByteToRead, ref numberOfByteRead, Overlapped) ? 1 : 0;
+            int num = _ReadFile(hFile, aBuffer, numberOfByteToRead, ref numberOfByteRead, Overlapped) ? 1 : 0;
             if (num != 0)
                 return num != 0;
-            WinIOAPI._APIErrorCode = (uint)Marshal.GetLastWin32Error();
+            _APIErrorCode = (uint)Marshal.GetLastWin32Error();
             return num != 0;
         }
 
@@ -180,27 +180,27 @@ namespace TakuLib.DiskAccessLib
         private static extern uint _SetFilePointer(
           SafeFileHandle hFile,
           uint distanceToMove,
-          UIntPtr distanceToMoveHigh,
-          WinIOAPI.MoveMethod method);
+          nuint distanceToMoveHigh,
+          MoveMethod method);
 
         public uint SetFilePointer(
           SafeFileHandle hFile,
           uint distanceToMove,
-          UIntPtr distanceToMoveHigh,
-          WinIOAPI.MoveMethod method)
+          nuint distanceToMoveHigh,
+          MoveMethod method)
         {
-            int num = (int)WinIOAPI._SetFilePointer(hFile, distanceToMove, distanceToMoveHigh, method);
+            int num = (int)_SetFilePointer(hFile, distanceToMove, distanceToMoveHigh, method);
             if (num != -1)
                 return (uint)num;
-            WinIOAPI._APIErrorCode = (uint)Marshal.GetLastWin32Error();
+            _APIErrorCode = (uint)Marshal.GetLastWin32Error();
             return (uint)num;
         }
 
         [DllImport("shell32.dll", SetLastError = true)]
-        public static extern IntPtr SHGetFileInfo(
+        public static extern nint SHGetFileInfo(
           string pszPath,
           uint dwAttribute,
-          ref WinIOAPI.SHFILEINFO psfi,
+          ref SHFILEINFO psfi,
           uint cbSizeFileInfo,
           uint uFlags);
 
@@ -213,31 +213,31 @@ namespace TakuLib.DiskAccessLib
         public string GetShortPath(string Path)
         {
             StringBuilder lpszShortPath = new StringBuilder(1024);
-            if (WinIOAPI.GetShortPathNameW(Path, lpszShortPath, (uint)lpszShortPath.Capacity) == 0U)
+            if (GetShortPathNameW(Path, lpszShortPath, (uint)lpszShortPath.Capacity) == 0U)
             {
-                WinIOAPI._APIErrorCode = (uint)Marshal.GetLastWin32Error();
-                if (WinIOAPI._APIErrorCode != 0U)
-                    throw new WinIOAPI.APICallException(this.APIErrorMessage);
+                _APIErrorCode = (uint)Marshal.GetLastWin32Error();
+                if (_APIErrorCode != 0U)
+                    throw new APICallException(APIErrorMessage);
                 lpszShortPath.Append(Path);
             }
             return lpszShortPath.ToString();
         }
 
-        public bool GetDriveGeometry(string DriveName, ref WinIOAPI.DISK_GEOMETRY outGEOMETRY)
+        public bool GetDriveGeometry(string DriveName, ref DISK_GEOMETRY outGEOMETRY)
         {
             uint BytesReturned = 0;
-            IntPtr num = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(WinIOAPI.DISK_GEOMETRY)));
+            nint num = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(DISK_GEOMETRY)));
             string filename = DiskUtils.ConvPhysicalDrive(DriveName);
-            uint OutBufferSize = (uint)Marshal.SizeOf(typeof(WinIOAPI.DISK_GEOMETRY));
-            using (SafeFileHandle file = this.CreateFile(filename, WinIOAPI.DesiredAccess.DEVICE_ACCESS, WinIOAPI.ShareMode.FILE_SHARE_READ, IntPtr.Zero, WinIOAPI.CreationDisposition.OPEN_EXISTING, (WinIOAPI.FlagsAndAttributes)0, IntPtr.Zero))
+            uint OutBufferSize = (uint)Marshal.SizeOf(typeof(DISK_GEOMETRY));
+            using (SafeFileHandle file = CreateFile(filename, DesiredAccess.DEVICE_ACCESS, ShareMode.FILE_SHARE_READ, nint.Zero, CreationDisposition.OPEN_EXISTING, 0, nint.Zero))
             {
-                if (!this.DeviceIoControl(file, WinIOAPI.ControlCodes.IOCTL_DISK_GET_DRIVE_GEOMETRY, IntPtr.Zero, 0U, num, OutBufferSize, ref BytesReturned, IntPtr.Zero))
+                if (!DeviceIoControl(file, ControlCodes.IOCTL_DISK_GET_DRIVE_GEOMETRY, nint.Zero, 0U, num, OutBufferSize, ref BytesReturned, nint.Zero))
                 {
-                    WinIOAPI._APIErrorCode = (uint)Marshal.GetLastWin32Error();
-                    if (WinIOAPI._APIErrorCode != 0U)
-                        throw new WinIOAPI.APICallException(this.APIErrorMessage);
+                    _APIErrorCode = (uint)Marshal.GetLastWin32Error();
+                    if (_APIErrorCode != 0U)
+                        throw new APICallException(APIErrorMessage);
                 }
-                outGEOMETRY = (WinIOAPI.DISK_GEOMETRY)Marshal.PtrToStructure(num, typeof(WinIOAPI.DISK_GEOMETRY));
+                outGEOMETRY = (DISK_GEOMETRY)Marshal.PtrToStructure(num, typeof(DISK_GEOMETRY));
                 return true;
             }
         }
@@ -297,7 +297,7 @@ namespace TakuLib.DiskAccessLib
         public struct DISK_GEOMETRY
         {
             public ulong Cylinders;
-            public WinIOAPI.MEDIA_TYPE MediaType;
+            public MEDIA_TYPE MediaType;
             public uint TracksPerCylinder;
             public uint SectorsPerTrack;
             public uint BytesPerSector;
@@ -305,7 +305,7 @@ namespace TakuLib.DiskAccessLib
 
         public struct FORMAT_PARAMETERS
         {
-            public WinIOAPI.MEDIA_TYPE MediaType;
+            public MEDIA_TYPE MediaType;
             public uint StartCylinderNumber;
             public uint EndCylinderNumber;
             public uint StartHeadNumber;
@@ -314,7 +314,7 @@ namespace TakuLib.DiskAccessLib
 
         public struct DISK_GEOMETRY_EX
         {
-            public WinIOAPI.DISK_GEOMETRY Geometry;
+            public DISK_GEOMETRY Geometry;
             public ulong DiskSize;
             public byte data;
         }
@@ -421,7 +421,7 @@ namespace TakuLib.DiskAccessLib
 
         public struct SHFILEINFO
         {
-            public IntPtr hIcon;
+            public nint hIcon;
             public int iIcon;
             public uint dwAttributes;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]

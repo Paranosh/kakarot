@@ -11,6 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TakuLib\**" />
+    <EmbeddedResource Remove="TakuLib\**" />
+    <None Remove="TakuLib\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Resources\1.png" />
     <None Remove="Resources\dsk2rom.exe" />
     <None Remove="Resources\jakusha.exe" />
