@@ -52,7 +52,7 @@ namespace kakarot
         private System.Windows.Forms.Timer clipboardMonitorTimer;
         private string lastClipboardText = string.Empty;
         int ContadorDescargas = 0;
-        string memoriarutas = "", nivelAnterior = "", nivelAnteriorPre = "", nivelActual = "";
+        string memoriarutas = "", nivelAnterior = "", nivelAnteriorPre = "", nivelActual = "", repoenuso="";
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
             // Restaurar la ventana al hacer doble clic en el ícono
@@ -308,34 +308,32 @@ namespace kakarot
         /// <returns>El subitem creado.</returns>
         static ToolStripMenuItem AddSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemText, bool Addseparator, Action<bool> clickedItem, string Name)
         {
-            // Crear un nuevo ToolStripMenuItem como subitem
-            ToolStripMenuItem subItem = new ToolStripMenuItem(subItemText);
-            subItem.Name = Name;
-            // Asociar un evento Click al subitem
-            subItem.Click += (sender, e) =>
-            {
-                ToolStripMenuItem clickedSubItem = sender as ToolStripMenuItem;
-                if (clickedSubItem != null)
+
+                // Crear un nuevo ToolStripMenuItem como subitem
+                ToolStripMenuItem subItem = new ToolStripMenuItem(subItemText);
+                subItem.Name = Name;
+                // Asociar un evento Click al subitem
+                subItem.Click += (sender, e) =>
                 {
-                    // MessageBox.Show($"¡Hiciste clic en el subitem: {clickedSubItem.Text}!");
-                    // if (clickedSubItem.Text == "Lanza OpenMSX") { MessageBox.Show(""); }
-                    foreach (ToolStripMenuItem item in parentItem.DropDownItems) { item.Checked = false; }
-                    subItem.Checked = true;
+                    ToolStripMenuItem clickedSubItem = sender as ToolStripMenuItem;
+                    if (clickedSubItem != null)
+                    {
+                        foreach (object item in parentItem.DropDownItems) 
+                        {
+                            ToolStripMenuItem menuItem = item as ToolStripMenuItem;
+                            if (menuItem == null) { continue; }
+                            menuItem.Checked = false; 
+                        }
+                        subItem.Checked = true;
+                        clickedItem?.Invoke(true);
+                    }
+                };
 
-                    clickedItem?.Invoke(true);
-                }
-            };
+                // Agregar el subitem al elemento principal
+                parentItem.DropDownItems.Add(subItem);
+                if (Addseparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
+                return subItem; // Retornar el subitem creado
 
-            // Agregar el subitem al elemento principal
-            parentItem.DropDownItems.Add(subItem);
-
-
-
-
-
-
-            if (Addseparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
-            return subItem; // Retornar el subitem creado
         }
         static bool RemoveSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemName)
         {
@@ -1644,7 +1642,6 @@ namespace kakarot
         }
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
-            /// hay que añadir opcion enable a false del menu open msx si PathOpenMSX is not null
             if (PathOpenMSX is not null) OpenMSX.Enabled = false;
             if (listBox1.SelectedIndex == -1) listBox1.SelectedIndex = 0;
             toolStripStatusLabel1.Text = "Total de archivos: " + listBox1.Items.Count.ToString();
@@ -2125,6 +2122,7 @@ namespace kakarot
         }
         private void Preparalistbox2(string urlrepo)
         {
+            repoenuso = urlrepo;
             listBox2.Items.Clear();
             ConfigureListBoxAppearance(listBox2);
             if (PathOpenMSX is not null) OpenMSX.Enabled = false;
@@ -2172,7 +2170,7 @@ namespace kakarot
                     nivelAnteriorPre = "";
                     nivelActual = "";
                     listBox2.Items.Clear();
-                    GhLevel1Async("https://api.github.com/repos/Dalekamistoso/MFC-PUBLIC/contents");
+                    GhLevel1Async(repoenuso);
                     return;
                 }
                 if (listBox2.SelectedItem.ToString() == ("\\.."))
@@ -2200,7 +2198,7 @@ namespace kakarot
                         nivelAnteriorPre = "";
                         nivelActual = "";
                         listBox2.Items.Clear();
-                        GhLevel1Async("https://api.github.com/repos/Dalekamistoso/MFC-PUBLIC/contents");
+                        GhLevel1Async(repoenuso);
                     }
                     return;
                 }
@@ -2290,29 +2288,7 @@ namespace kakarot
             }
             return "Not found";
         }
-        static void SetupExclusiveCheckHandler(ToolStripMenuItem parentItem)
-        {
-            foreach (ToolStripItem item in parentItem.DropDownItems)
-            {
-                if (item is ToolStripMenuItem menuItem)
-                {
-                    menuItem.Click += (sender, e) =>
-                    {
-                        // Desmarcar todos los demás elementos del mismo nivel
-                        foreach (ToolStripItem sibling in parentItem.DropDownItems)
-                        {
-                            if (sibling is ToolStripMenuItem siblingMenuItem)
-                            {
-                                siblingMenuItem.Checked = false;
-                            }
-                        }
-
-                        // Marcar el elemento actual
-                        menuItem.Checked = true;
-                    };
-                }
-            }
-        }
+       
     }
 }
 
