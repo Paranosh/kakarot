@@ -11,6 +11,9 @@ using System.Reflection;
 using Konamiman.JoySerTrans;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
+using System.Security.Policy;
+using System;
 
 
 namespace kakarot
@@ -24,11 +27,12 @@ namespace kakarot
             this.Resize += Form1_Resize;
             notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
             this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
+            InitializeClipboardMonitor();
         }
         static long fileLength;
         static long bytesSent;
         static string filenameSent;
-        ToolStripMenuItem OpenMSX, Launcher;
+        ToolStripMenuItem OpenMSX, Launcher, Favoritos;
         WebBrowser webBrowser = new WebBrowser();
         Dictionary<string, string> dictionary = new Dictionary<string, string>();
         string PathOpenMSX, TipoDeMApper, acumulador = "";
@@ -40,6 +44,8 @@ namespace kakarot
         string listado = "", updatelistado = "", archivosdescargados = "Descargado ";
         List<FileData> fileList, fileListUpdate;
         List<string> originalItems = new List<string>();
+        private System.Windows.Forms.Timer clipboardMonitorTimer;
+        private string lastClipboardText = string.Empty;
         int ContadorDescargas = 0;
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
@@ -315,6 +321,20 @@ namespace kakarot
             if (Addseparator) parentItem.DropDownItems.Add(new ToolStripSeparator());
             return subItem; // Retornar el subitem creado
         }
+        static bool RemoveSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemName)
+        {
+            // Buscar el subitem por su nombre
+            foreach (ToolStripItem item in parentItem.DropDownItems)
+            {
+                if (item is ToolStripMenuItem subItem && subItem.Name == subItemName)
+                {
+                    // Eliminar el subitem encontrado
+                    parentItem.DropDownItems.Remove(item);
+                    return true; // Indicar que el subitem se eliminó con éxito
+                }
+            }
+            return false; // Indicar que no se encontró el subitem
+        }
         private void ApplyLanguage(string cultureCode)
         {
             try
@@ -380,14 +400,27 @@ namespace kakarot
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            //Detecta la cultura del sistema y aplica el idioma automáticamente
-            //var systemCulture = CultureInfo.CurrentUICulture;
-            //ApplyLanguage(systemCulture.Name);
             webBrowser.Navigate("https://msxscans.file-hunter.com/");
             ConfigureListBoxAppearance(listBox1);
+            Favoritos = AddMenuItem(contextMenuStrip1, "Favoritos", 9, false, "FavoritosMenu");
             if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
             if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
             if (!Directory.Exists(Application.StartupPath + "\\launcher")) Directory.CreateDirectory(Application.StartupPath + "\\launcher");
+            if (!File.Exists(Application.StartupPath + "\\favoritos.fav"))
+            {
+                File.Create(Application.StartupPath + "\\favoritos.fav");
+            }
+            else
+            {
+                var Urls = File.ReadAllLines(Application.StartupPath + "\\favoritos.fav");
+                foreach (var laUrl in Urls)
+                {
+                    AddSubMenuItemToolStrip(Favoritos, laUrl, false, clickedItem =>
+                    {
+                        Process.Start(new ProcessStartInfo(laUrl) { UseShellExecute = true });
+                    }, laUrl);
+                }
+            }
             //iniciacilzamos config...
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             //chuleta
@@ -1854,6 +1887,87 @@ namespace kakarot
             config.AppSettings.Settings["Idioma"].Value = "en";
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
+        }
+        private bool IsUrl(string text)
+        {
+            string urlPattern = @"^(https?:\/\/[^\s]+)$";
+            return Regex.IsMatch(text, urlPattern, RegexOptions.IgnoreCase);
+        }
+        private void HandleUrl(string url)
+        {
+
+            var urls = File.ReadAllLines(Application.StartupPath + "\\favoritos.fav");
+            if (Array.Exists(urls, u => u.Equals(url, StringComparison.OrdinalIgnoreCase)))
+            {
+                this.TopMost = true;
+                this.Show();
+                this.WindowState = FormWindowState.Normal;
+                notifyIcon.Visible = false;
+                var result = MessageBox.Show(
+                    $"La URL ya existe:\n\n{url}\n\n¿Desea eliminarla?",
+                    "URL Duplicada",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                if (result == DialogResult.Yes)
+                {
+                    File.WriteAllLines(Application.StartupPath + "\\favoritos.fav", Array.FindAll(urls, u => !u.Equals(url, StringComparison.OrdinalIgnoreCase)));
+                    MessageBox.Show("URL eliminada.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Clipboard.Clear();
+                    RemoveSubMenuItemToolStrip(Favoritos,url);
+                }
+            }
+            else
+            {
+                this.TopMost = true;
+                this.Show();
+                this.WindowState = FormWindowState.Normal;
+                notifyIcon.Visible = false;
+                var result = MessageBox.Show(
+                   $"Detectada un URL en el portapapeles:\n\n{url}\n\n¿Añadirla a favoritos?",
+                   "Atencion",
+                   MessageBoxButtons.YesNo,
+                   MessageBoxIcon.Question
+               );
+
+                if (result == DialogResult.Yes)
+                {
+                    File.AppendAllText(Application.StartupPath + "\\favoritos.fav", url + Environment.NewLine);
+                    MessageBox.Show("URL añadida a favoritos.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Clipboard.Clear();
+                    AddSubMenuItemToolStrip(Favoritos, url, false, clickedItem =>
+                    {
+                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    }, url);
+
+                }
+                
+            }
+            this.TopMost = false;           
+        }
+        private void InitializeClipboardMonitor()
+        {
+            clipboardMonitorTimer = new System.Windows.Forms.Timer
+            {
+                Interval = 500 // Verificar cada 500 ms
+            };
+
+            clipboardMonitorTimer.Tick += ClipboardMonitorTimer_Tick;
+            clipboardMonitorTimer.Start();
+        }
+        private void ClipboardMonitorTimer_Tick(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsText())
+            {
+                string currentText = Clipboard.GetText();
+
+                if (currentText != lastClipboardText && IsUrl(currentText))
+                {
+                    lastClipboardText = currentText;
+                    HandleUrl(currentText);
+                }
+            }
         }
     }
 }
