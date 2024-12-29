@@ -322,10 +322,11 @@ namespace kakarot
                     {
                         ToolStripMenuItem menuItem = item as ToolStripMenuItem;
                         if (menuItem == null) { continue; }
+                        ///hay que ver como hacer NovedadesToolStripMenuItem.Checked = false;
                         menuItem.Checked = false;
                     }
-                    if (ischeckbox) subItem.Checked = true;
-                    clickedItem?.Invoke(true);
+                    if (ischeckbox) { subItem.Checked = true; }
+                        clickedItem?.Invoke(true);
                 }
             };
 
@@ -883,12 +884,14 @@ namespace kakarot
                 config.AppSettings.Settings["UltimoCheckNovedadesFileHunter"].Value = dataGridView2.Rows[0].Cells[4].Value.ToString();
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
+                filehunterToolStripMenuItem.Checked = false;
             }
             else
             {
                 dataGridView2.SendToBack();
                 dataGridView2.Visible = false;
                 dataGridView1.Visible = true;
+                filehunterToolStripMenuItem.Checked = true;
             }
         }
         private void buscarToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
@@ -951,7 +954,7 @@ namespace kakarot
                     using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
                     {
                         //folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
-                        //folderDialog.ShowNewFolderButton = true;
+                        folderDialog.ShowNewFolderButton = true;
 
                         // Mostrar el cuadro de diálogo
                         if (folderDialog.ShowDialog() == DialogResult.OK)
@@ -972,7 +975,7 @@ namespace kakarot
                 {
                     using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
                     {
-                        folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
+                      //  folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
                         folderDialog.ShowNewFolderButton = true;
 
                         // Mostrar el cuadro de diálogo
