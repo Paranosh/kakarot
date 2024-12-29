@@ -949,47 +949,55 @@ namespace kakarot
             string paz = "";
             if (IsControlVisible(dataGridView1))
             {
-                foreach (DataGridViewRow row in dataGridView1.SelectedRows)
+                try
                 {
-                    using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+                    foreach (DataGridViewRow row in dataGridView1.SelectedRows)
                     {
-                        //folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
-                        folderDialog.ShowNewFolderButton = true;
-
-                        // Mostrar el cuadro de diálogo
-                        if (folderDialog.ShowDialog() == DialogResult.OK)
+                        using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
                         {
-                            // Mostrar la ruta seleccionada en el cuadro de texto
-                            paz = folderDialog.SelectedPath;
+                            //folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
+                            folderDialog.ShowNewFolderButton = true;
+
+                            // Mostrar el cuadro de diálogo
+                            if (folderDialog.ShowDialog() == DialogResult.OK)
+                            {
+                                // Mostrar la ruta seleccionada en el cuadro de texto
+                                paz = folderDialog.SelectedPath;
+                            }
                         }
+                        Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
+                        string fileName = uri.Segments[uri.Segments.Length - 1];
+                        archivosdescargados = "Descargado ";
+                        TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
                     }
-                    Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
-                    string fileName = uri.Segments[uri.Segments.Length - 1];
-                    archivosdescargados = "Descargado ";
-                    TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
                 }
+                catch { }
             }
             if (IsControlVisible(dataGridView2))
             {
-                foreach (DataGridViewRow row in dataGridView2.SelectedRows)
+                try
                 {
-                    using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+                    foreach (DataGridViewRow row in dataGridView2.SelectedRows)
                     {
-                      //  folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
-                        folderDialog.ShowNewFolderButton = true;
-
-                        // Mostrar el cuadro de diálogo
-                        if (folderDialog.ShowDialog() == DialogResult.OK)
+                        using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
                         {
-                            // Mostrar la ruta seleccionada en el cuadro de texto
-                            paz = folderDialog.SelectedPath;
+                            //  folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
+                            folderDialog.ShowNewFolderButton = true;
+
+                            // Mostrar el cuadro de diálogo
+                            if (folderDialog.ShowDialog() == DialogResult.OK)
+                            {
+                                // Mostrar la ruta seleccionada en el cuadro de texto
+                                paz = folderDialog.SelectedPath;
+                            }
                         }
+                        Uri uri = new Uri(row.Cells["Url"].Value.ToString());
+                        string fileName = uri.Segments[uri.Segments.Length - 1];
+                        archivosdescargados = "Descargado ";
+                        TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
                     }
-                    Uri uri = new Uri(row.Cells["Url"].Value.ToString());
-                    string fileName = uri.Segments[uri.Segments.Length - 1];
-                    archivosdescargados = "Descargado ";
-                    TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
                 }
+                catch { }
             }
             if (IsControlVisible(listBox1))
             {
