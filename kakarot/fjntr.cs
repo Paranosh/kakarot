@@ -40,7 +40,7 @@ namespace kakarot
         ToolStripMenuItem OpenMSX, Launcher, Favoritos;
         WebBrowser webBrowser = new WebBrowser();
         Dictionary<string, string> dictionary = new Dictionary<string, string>();
-        string PathOpenMSX, TipoDeMApper, acumulador = "";
+        string PathOpenMSX, TipoDeMApper, acumulador = "", UltimoArchivoActualizado = "";
         private System.Windows.Forms.Timer fadeTimer;
         private float opacityIncrement;
         private bool fadeIn, permitirVariasInstancias, descargando = false;
@@ -124,8 +124,6 @@ namespace kakarot
             client.DownloadFileCompleted += DownloadFileCompleted(Filename);
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
             await client.DownloadFileTaskAsync(Uri, Filename);
-
-
         }
         public AsyncCompletedEventHandler DownloadFileCompleted(string filename)
         {
@@ -167,7 +165,6 @@ namespace kakarot
                     if (filename == "Update-Log.txt")
                     {
                         int b = 0;
-                        string UltimoArchivoActualizado = "";
                         updatelistado = File.ReadAllText("Update-Log.txt");
                         File.Delete(filename);
                         string[] lines = updatelistado.Trim().Split('\n');
@@ -192,19 +189,7 @@ namespace kakarot
                             }
                             b++;
                         }
-                        if (bool.Parse(ConfigurationManager.AppSettings["InformaDeActualizacionesFileHunter"]))
-                        {
-                            informarDeActualizacionesToolStripMenuItem.Checked = true;
-                            var ultimovisto = ConfigurationManager.AppSettings["UltimoCheckNovedadesFileHunter"].ToString();
-                            if (ultimovisto != UltimoArchivoActualizado)
-                            {
-                                var userResult = AutoClosingMessageBox.Show("Hay novedades en File-hunter, ¿Deseas verlas?", "Updates", 500, MessageBoxButtons.YesNo);
-                                if (userResult == System.Windows.Forms.DialogResult.Yes)
-                                {
-                                    verNovedadesToolStripMenuItem.PerformClick();
-                                }
-                            }
-                        }
+                       
                     }
                     if (ContadorDescargas == 2)
                     {
@@ -224,6 +209,20 @@ namespace kakarot
                                 dataGridView1.Rows[0].Selected = true;
                                 Uri url = new Uri(dataGridView1.Rows[0].Cells["FilePath"].Value.ToString());
                                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                                if (bool.Parse(ConfigurationManager.AppSettings["InformaDeActualizacionesFileHunter"]))
+                                {
+                                    informarDeActualizacionesToolStripMenuItem.Checked = true;
+                                    var ultimovisto = ConfigurationManager.AppSettings["UltimoCheckNovedadesFileHunter"].ToString();
+                                    if (ultimovisto != UltimoArchivoActualizado)
+                                    {
+                                        var userResult = AutoClosingMessageBox.Show("Hay novedades en File-hunter, ¿Deseas verlas?", "Updates", 500, MessageBoxButtons.YesNo);
+                                        if (userResult == System.Windows.Forms.DialogResult.Yes)
+                                        {
+                                            verNovedadesToolStripMenuItem.PerformClick();
+                                        }
+                                    }
+                                }
+
                             }, TaskScheduler.FromCurrentSynchronizationContext());
 
                     }
@@ -421,6 +420,7 @@ namespace kakarot
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            Clipboard.Clear();
             webBrowser.Navigate("https://msxscans.file-hunter.com/");
             ConfigureListBoxAppearance(listBox1);
             Favoritos = AddMenuItem(contextMenuStrip1, "Favoritos", 9, false, "FavoritosMenu");
@@ -1382,7 +1382,7 @@ namespace kakarot
             {
                 Uri url = new Uri(dataGridView2.CurrentRow.Cells["Url"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png")|| toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
+                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png") || toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
             }
         }
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
@@ -1391,7 +1391,7 @@ namespace kakarot
             {
                 Uri url = new Uri(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png")|| toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
+                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png") || toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
             }
         }
         private void toolStripComboBox3_SelectedIndexChanged(object sender, EventArgs e)
@@ -2187,7 +2187,6 @@ namespace kakarot
             listBox2.Visible = true;
             GhLevel1Async(urlrepo);
         }
-
         private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBox2.SelectedItem != null)
@@ -2206,7 +2205,6 @@ namespace kakarot
                 }
             }
         }
-
         private void listBox2_DoubleClick(object sender, EventArgs e)
         {
             if (listBox2.SelectedItem != null)
@@ -2336,12 +2334,10 @@ namespace kakarot
             }
             return "Not found";
         }
-
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             toolStripStatusLabel1.Text = "MSXScans " + listBox1.SelectedItem.ToString();
         }
-
         private static async Task<Image> LoadImageFromUrlAsync(string url)
         {
             using (HttpClient client = new HttpClient())
@@ -2354,7 +2350,6 @@ namespace kakarot
                 }
             }
         }
-
         private async void AbreImagen(string imagen)
         {
             // Crear y configurar el formulario
@@ -2474,14 +2469,14 @@ namespace kakarot
         }
         private async void MuestraImagentoolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            if (IsControlVisible(dataGridView1)) 
+            if (IsControlVisible(dataGridView1))
             {
                 if (dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".png") || dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".jpg"))
                 {
-                    foreach (DataGridViewRow rou in dataGridView1.SelectedRows) 
+                    foreach (DataGridViewRow rou in dataGridView1.SelectedRows)
                     {
-                        AbreImagen(rou.Cells["FilePath"].Value.ToString()); 
-                    }   
+                        AbreImagen(rou.Cells["FilePath"].Value.ToString());
+                    }
                 }
             }
             if (IsControlVisible(dataGridView2))
@@ -2492,6 +2487,10 @@ namespace kakarot
                         AbreImagen(rou.Cells["Url"].Value.ToString());
                     }
             }
+        }
+        private void bASROMToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //https://github.com/amaurycarvalho/msxbas2rom
         }
     }
 }
