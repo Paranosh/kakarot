@@ -210,16 +210,22 @@ namespace kakarot
                     {
                         toolStripStatusLabel1.Text = "Añadiendo datos al grid...por favor espere";
                         Task.Run(() =>
-                         {
-                             Invoke((Action)(() =>
-                             {
-                                 // Asignar los datos al DataGridView en el hilo principal
-                                 BindDataToDataGridView(fileList, dataGridView1);
-                                 BindDataToDataGridView(fileListUpdate, dataGridView2);
-                                 SetupTextBoxFilter();
+                        {
+                            Invoke((Action)(() =>
+                            {
+                                // Asignar los datos al DataGridView en el hilo principal
+                                BindDataToDataGridView(fileList, dataGridView1);
+                                BindDataToDataGridView(fileListUpdate, dataGridView2);
+                                SetupTextBoxFilter();
+                            }));
+                        })
+                            .ContinueWith(task =>
+                            {
+                                dataGridView1.Rows[0].Selected = true;
+                                Uri url = new Uri(dataGridView1.Rows[0].Cells["FilePath"].Value.ToString());
+                                toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                            }, TaskScheduler.FromCurrentSynchronizationContext());
 
-                             }));
-                         });
                     }
                 }
             };
@@ -326,7 +332,7 @@ namespace kakarot
                         menuItem.Checked = false;
                     }
                     if (ischeckbox) { subItem.Checked = true; }
-                        clickedItem?.Invoke(true);
+                    clickedItem?.Invoke(true);
                 }
             };
 
@@ -599,11 +605,12 @@ namespace kakarot
             if (e.KeyCode == Keys.Return)
 
             {
-                // buscaremos
+                // limpieamos busqueda, mostramos todos
                 // ApplyFilter(textBox1.Text);
                 panel1.Visible = false;
                 buscarToolStripMenuItem1.Checked = false;
                 textBox1.Text = string.Empty;
+                if (IsControlVisible(dataGridView1)) { dataGridView1.ClearSelection(); dataGridView1.Rows[0].Selected = true; }
             }
         }
         private void BindDataToDataGridView(List<FileData> _data, DataGridView _dvControl)
@@ -628,11 +635,11 @@ namespace kakarot
             _dvControl.Columns["Hash"].Visible = false;
             toolStripStatusLabel1.Text = "Total de archivos: " + _dvControl.RowCount.ToString();
             //seleccionamos el primer row
-            if (_dvControl.Rows.Count > 0)
-            {
-                // Establecer la celda activa (seleccionada) en la primera fila, primera columna
-                _dvControl.Rows[0].Selected = true;
-            }
+            //if (_dvControl.Rows.Count > 0)
+            //{
+            //    // Establecer la celda activa (seleccionada) en la primera fila, primera columna
+            //    _dvControl.Rows[0].Selected = true;
+            //}
         }
         private void SetupTextBoxFilter()
         {
@@ -715,14 +722,39 @@ namespace kakarot
                     _dataTable.DefaultView.RowFilter = filterExpression;
 
                     // Actualizar el estado en el ToolStripStatusLabel
-                    toolStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
+                    if (IsControlVisible(dataGridView1))
+                    {
+                        try
+                        {
+                            // dataGridView1.Rows[0].Selected = true;
+                            Uri url = new Uri(dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString());
+                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                            // tooStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
+                        }
+                        catch { }
+                    }
+                    if (IsControlVisible(dataGridView2))
+                    {
+                        try
+                        {
+                            //dataGridView2.Rows[0].Selected = true;
+                            Uri url = new Uri(dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString());
+                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                            //  toolStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
+                        }
+                        catch { }
+                    }
                 }
                 else
                 {
                     throw new ArgumentException("El tipo de control no es compatible. Use ListBox o DataGridView.");
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Ocurrio un error al aplicar el filtro", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); textBox1.Text = ""; }
+            catch (Exception ex)
+            {
+                // MessageBox.Show("Ocurrio un error al aplicar el filtro", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //textBox1.Text = ""; 
+            }
         }
         public bool IsControlVisible(Control control)
         {
@@ -885,6 +917,8 @@ namespace kakarot
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
                 filehunterToolStripMenuItem.Checked = false;
+                Uri url = new Uri(dataGridView2.CurrentRow.Cells["Url"].Value.ToString());
+                toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
             }
             else
             {
@@ -963,12 +997,14 @@ namespace kakarot
                             {
                                 // Mostrar la ruta seleccionada en el cuadro de texto
                                 paz = folderDialog.SelectedPath;
+                                Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
+                                string fileName = uri.Segments[uri.Segments.Length - 1];
+                                archivosdescargados = "Descargado ";
+                                TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
                             }
+                            else { return; }
                         }
-                        Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
-                        string fileName = uri.Segments[uri.Segments.Length - 1];
-                        archivosdescargados = "Descargado ";
-                        TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
+
                     }
                 }
                 catch { }
@@ -989,12 +1025,14 @@ namespace kakarot
                             {
                                 // Mostrar la ruta seleccionada en el cuadro de texto
                                 paz = folderDialog.SelectedPath;
+                                Uri uri = new Uri(row.Cells["Url"].Value.ToString());
+                                string fileName = uri.Segments[uri.Segments.Length - 1];
+                                archivosdescargados = "Descargado ";
+                                TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
                             }
+                            else { return; }
                         }
-                        Uri uri = new Uri(row.Cells["Url"].Value.ToString());
-                        string fileName = uri.Segments[uri.Segments.Length - 1];
-                        archivosdescargados = "Descargado ";
-                        TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
+
                     }
                 }
                 catch { }
@@ -1050,6 +1088,8 @@ namespace kakarot
                         }
                         TaskDownloadFileArchivos(fbd.SelectedPath + "\\" + fileName, url, false);
                     }
+                    else
+                    { return; }
                 }
             }
         }
@@ -1356,6 +1396,7 @@ namespace kakarot
             {
                 Uri url = new Uri(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
             }
         }
         private void toolStripComboBox3_SelectedIndexChanged(object sender, EventArgs e)
@@ -1648,7 +1689,8 @@ namespace kakarot
             dataGridView1.BringToFront();
             dataGridView1.Visible = true;
             panel1.BringToFront();
-            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString();
+            Uri url = new Uri(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
+            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
 
         }
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
@@ -2303,6 +2345,11 @@ namespace kakarot
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             toolStripStatusLabel1.Text = "MSXScans " + listBox1.SelectedItem.ToString();
+        }
+
+        private void MuestraImagentoolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
