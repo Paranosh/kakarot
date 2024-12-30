@@ -581,7 +581,6 @@ namespace kakarot
                     }, "EjecutaSelecionadoLauncher" + Shortfile, false);
                 }
             }
-
             descomprimirDespuesDeDescargarToolStripMenuItem.Checked = bool.Parse(ConfigurationManager.AppSettings["DescomprimirDespuesdeDescargar"]);
             //listamos los puertos com si existen en el equipo si no devolvera la palabra null
             string[] comPorts = SerialPort.GetPortNames();
@@ -611,6 +610,7 @@ namespace kakarot
                 buscarToolStripMenuItem1.Checked = false;
                 textBox1.Text = string.Empty;
                 if (IsControlVisible(dataGridView1)) { dataGridView1.ClearSelection(); dataGridView1.Rows[0].Selected = true; }
+                if (IsControlVisible(dataGridView2)) { dataGridView2.ClearSelection(); dataGridView2.Rows[0].Selected = true; }
             }
         }
         private void BindDataToDataGridView(List<FileData> _data, DataGridView _dvControl)
@@ -634,12 +634,6 @@ namespace kakarot
             }
             _dvControl.Columns["Hash"].Visible = false;
             toolStripStatusLabel1.Text = "Total de archivos: " + _dvControl.RowCount.ToString();
-            //seleccionamos el primer row
-            //if (_dvControl.Rows.Count > 0)
-            //{
-            //    // Establecer la celda activa (seleccionada) en la primera fila, primera columna
-            //    _dvControl.Rows[0].Selected = true;
-            //}
         }
         private void SetupTextBoxFilter()
         {
@@ -1388,6 +1382,7 @@ namespace kakarot
             {
                 Uri url = new Uri(dataGridView2.CurrentRow.Cells["Url"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png")|| toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
             }
         }
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
@@ -1396,7 +1391,7 @@ namespace kakarot
             {
                 Uri url = new Uri(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
+                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png")|| toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
             }
         }
         private void toolStripComboBox3_SelectedIndexChanged(object sender, EventArgs e)
@@ -2347,12 +2342,160 @@ namespace kakarot
             toolStripStatusLabel1.Text = "MSXScans " + listBox1.SelectedItem.ToString();
         }
 
-        private void MuestraImagentoolStripMenuItem1_Click(object sender, EventArgs e)
+        private static async Task<Image> LoadImageFromUrlAsync(string url)
         {
+            using (HttpClient client = new HttpClient())
+            {
+                var response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                using (Stream stream = await response.Content.ReadAsStreamAsync())
+                {
+                    return Image.FromStream(stream);
+                }
+            }
+        }
 
+        private async void AbreImagen(string imagen)
+        {
+            // Crear y configurar el formulario
+            Form form = new Form
+            {
+                Text = "Visor de Imagen",
+                StartPosition = FormStartPosition.CenterScreen,
+                BackColor = SystemColors.ControlDarkDark, // Color de fondo del formulario
+                ClientSize = new Size(1024, 768), // Tamaño fijo del formulario
+                FormBorderStyle = FormBorderStyle.FixedDialog, // Evitar redimensionar
+                MaximizeBox = false, // Deshabilitar maximización
+                MinimizeBox = true // Permitir minimizar
+            };
+            // Crear el PictureBox
+            PictureBox pictureBox = new PictureBox
+            {
+                Dock = DockStyle.None, // Permitir controlar tamaño manualmente
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left,
+                Cursor = Cursors.Hand // Cursor inicial
+            };
+            // Variables para manejar el zoom y el arrastre
+            float zoomFactor = 1.0f;
+            const float zoomStep = 0.1f;
+            bool isDragging = false;
+            Point mouseDownLocation = Point.Empty; // Inicializar correctamente
+            // Manejar el evento MouseWheel para realizar zoom
+            form.MouseWheel += (sender, e) =>
+            {
+                if (e.Delta > 0)
+                {
+                    zoomFactor += zoomStep; // Aumentar zoom
+                }
+                else if (e.Delta < 0)
+                {
+                    zoomFactor = Math.Max(zoomStep, zoomFactor - zoomStep); // Reducir zoom pero no por debajo de zoomStep
+                }
+
+                // Ajustar el tamaño del PictureBox basado en el zoom
+                int newWidth = (int)(pictureBox.Image.Width * zoomFactor);
+                int newHeight = (int)(pictureBox.Image.Height * zoomFactor);
+                pictureBox.Size = new Size(newWidth, newHeight);
+            };
+            // Manejar el evento MouseDown para iniciar el arrastre
+            pictureBox.MouseDown += (sender, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    isDragging = true;
+                    mouseDownLocation = e.Location; // Guardar la posición del clic
+                    pictureBox.Cursor = Cursors.SizeAll;
+                }
+            };
+            // Manejar el evento MouseMove para mover la imagen
+            pictureBox.MouseMove += (sender, e) =>
+            {
+                if (isDragging)
+                {
+                    pictureBox.Left += e.X - mouseDownLocation.X;
+                    pictureBox.Top += e.Y - mouseDownLocation.Y;
+                }
+            };
+            // Manejar el evento MouseUp para finalizar el arrastre
+            pictureBox.MouseUp += (sender, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    isDragging = false;
+                    pictureBox.Cursor = Cursors.Hand;
+                }
+            };
+            // Agregar el PictureBox al formulario
+            form.Controls.Add(pictureBox);
+            // Manejar las teclas de dirección para mover la imagen
+            form.KeyDown += (sender, e) =>
+            {
+                // Desplazamiento de la imagen con las teclas de dirección
+                const int moveStep = 10; // Mover la imagen 10 píxeles por pulsación
+                switch (e.KeyCode)
+                {
+                    case Keys.Up:
+                        pictureBox.Top -= moveStep;
+                        break;
+                    case Keys.Down:
+                        pictureBox.Top += moveStep;
+                        break;
+                    case Keys.Left:
+                        pictureBox.Left += moveStep;
+                        break;
+                    case Keys.Right:
+                        pictureBox.Left -= moveStep;
+                        break;
+                }
+            };
+            try
+            {
+                // Cargar la imagen desde la URL
+                Image image = await LoadImageFromUrlAsync(imagen);
+                // Mostrar la imagen en el PictureBox
+                pictureBox.Image = image;
+                // Configurar el tamaño inicial del PictureBox y centrarlo
+                pictureBox.Size = new Size(image.Width, image.Height);
+                pictureBox.Location = new Point(
+                    (form.ClientSize.Width - pictureBox.Width) / 2,
+                    (form.ClientSize.Height - pictureBox.Height) / 2
+                );
+                // Hacer el formulario recibir eventos de teclado
+                form.KeyPreview = true;
+                // Mostrar el formulario
+                form.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar la imagen: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+        }
+        private async void MuestraImagentoolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (IsControlVisible(dataGridView1)) 
+            {
+                if (dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".png") || dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".jpg"))
+                {
+                    foreach (DataGridViewRow rou in dataGridView1.SelectedRows) 
+                    {
+                        AbreImagen(rou.Cells["FilePath"].Value.ToString()); 
+                    }   
+                }
+            }
+            if (IsControlVisible(dataGridView2))
+            {
+                if (dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString().ToLower().EndsWith(".png") || dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString().ToLower().EndsWith(".jpg"))
+                    foreach (DataGridViewRow rou in dataGridView2.SelectedRows)
+                    {
+                        AbreImagen(rou.Cells["Url"].Value.ToString());
+                    }
+            }
         }
     }
 }
+
 
 public class FileData
 {
