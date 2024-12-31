@@ -1672,21 +1672,22 @@ namespace kakarot
         }
         private void filehunterToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (filehunterToolStripMenuItem.Checked) { return; }
             if (PathOpenMSX is not null) OpenMSX.Enabled = true;
-            verNovedadesToolStripMenuItem.Checked = false;
-            webMSXToolStripMenuItem.Enabled = true;
-            toolStripComboBox3.Enabled = true;
-            verNovedadesToolStripMenuItem.Enabled = true;
-            foreach (ToolStripMenuItem item in reposToolStripMenuItem.DropDownItems) { item.Checked = false; }
-            filehunterToolStripMenuItem.Checked = true;
-            listBox1.Visible = false;
-            listBox2.Visible = false;
-            dataGridView1.BringToFront();
-            dataGridView1.Visible = true;
-            panel1.BringToFront();
-            Uri url = new Uri(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
-            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-
+                verNovedadesToolStripMenuItem.Checked = false;
+                webMSXToolStripMenuItem.Enabled = true;
+                toolStripComboBox3.Enabled = true;
+                verNovedadesToolStripMenuItem.Enabled = true;
+                foreach (ToolStripMenuItem item in reposToolStripMenuItem.DropDownItems) { item.Checked = false; }
+                filehunterToolStripMenuItem.Checked = true;
+                listBox1.Visible = false;
+                listBox2.Visible = false;
+                dataGridView1.BringToFront();
+                dataGridView1.Visible = true;
+                panel1.BringToFront();
+                Uri url = new Uri(dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString());
+                toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+     
         }
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
