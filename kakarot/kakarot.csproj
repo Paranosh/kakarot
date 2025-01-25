@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\kakarot.ico" />
+    <EmbeddedResource Include="Resources\kakarot.ico" />
   </ItemGroup>
 
   <ItemGroup>

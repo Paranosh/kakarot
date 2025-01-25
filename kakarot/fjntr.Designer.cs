@@ -80,6 +80,7 @@
             notifyIcon = new NotifyIcon(components);
             listBox1 = new ListBox();
             listBox2 = new ListBox();
+            copiarToolStripMenuItem = new ToolStripMenuItem();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             contextMenuStrip1.SuspendLayout();
@@ -179,9 +180,9 @@
             // contextMenuStrip1
             // 
             contextMenuStrip1.ImageScalingSize = new Size(24, 24);
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { herramientasToolStripMenuItem, MuestraImagentoolStripMenuItem1, toolStripSeparator3, reposToolStripMenuItem, toolStripSeparator1, webMSXToolStripMenuItem, descargarSeleccionToolStripMenuItem, toolStripSeparator4, opcionesToolStripMenuItem, toolStripSeparator2, buscarToolStripMenuItem1 });
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { herramientasToolStripMenuItem, MuestraImagentoolStripMenuItem1, toolStripSeparator3, reposToolStripMenuItem, toolStripSeparator1, webMSXToolStripMenuItem, descargarSeleccionToolStripMenuItem, toolStripSeparator4, opcionesToolStripMenuItem, toolStripSeparator2, buscarToolStripMenuItem1, copiarToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(181, 204);
+            contextMenuStrip1.Size = new Size(181, 226);
             // 
             // herramientasToolStripMenuItem
             // 
@@ -314,7 +315,7 @@
             filehunterToolStripMenuItem.CheckState = CheckState.Checked;
             filehunterToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { verNovedadesToolStripMenuItem, informarDeActualizacionesToolStripMenuItem, toolStripComboBox3 });
             filehunterToolStripMenuItem.Name = "filehunterToolStripMenuItem";
-            filehunterToolStripMenuItem.Size = new Size(180, 22);
+            filehunterToolStripMenuItem.Size = new Size(133, 22);
             filehunterToolStripMenuItem.Text = "File-hunter";
             filehunterToolStripMenuItem.Click += filehunterToolStripMenuItem_Click;
             // 
@@ -346,7 +347,7 @@
             // 
             MSXScanstoolStripMenuItem4.CheckOnClick = true;
             MSXScanstoolStripMenuItem4.Name = "MSXScanstoolStripMenuItem4";
-            MSXScanstoolStripMenuItem4.Size = new Size(180, 22);
+            MSXScanstoolStripMenuItem4.Size = new Size(133, 22);
             MSXScanstoolStripMenuItem4.Text = "MSX-Scans";
             MSXScanstoolStripMenuItem4.Click += toolStripMenuItem4_Click;
             // 
@@ -478,9 +479,12 @@
             // notifyIcon
             // 
             notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            notifyIcon.BalloonTipText = "La aplicación está en la bandeja del sistema.";
+            notifyIcon.BalloonTipTitle = "Aplicación minimizada";
             notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
             notifyIcon.Text = "Kakarot";
             notifyIcon.Visible = true;
+            notifyIcon.MouseDoubleClick += notifyIcon_MouseDoubleClick;
             // 
             // listBox1
             // 
@@ -509,6 +513,13 @@
             listBox2.Visible = false;
             listBox2.SelectedIndexChanged += listBox2_SelectedIndexChanged;
             listBox2.DoubleClick += listBox2_DoubleClick;
+            // 
+            // copiarToolStripMenuItem
+            // 
+            copiarToolStripMenuItem.Name = "copiarToolStripMenuItem";
+            copiarToolStripMenuItem.Size = new Size(180, 22);
+            copiarToolStripMenuItem.Text = "Copiar";
+            copiarToolStripMenuItem.Click += copiarToolStripMenuItem_Click;
             // 
             // fjntr
             // 
@@ -589,5 +600,6 @@
         private ListBox listBox2;
         private ToolStripMenuItem MuestraImagentoolStripMenuItem1;
         private ToolStripMenuItem bASROMToolStripMenuItem;
+        private ToolStripMenuItem copiarToolStripMenuItem;
     }
 }

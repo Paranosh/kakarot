@@ -19,6 +19,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
 using System.Net.Http.Headers;
+using kakarot.Properties;
+using System.Resources;
 
 
 namespace kakarot
@@ -30,7 +32,6 @@ namespace kakarot
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Resize += Form1_Resize;
-            notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
             this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
             InitializeClipboardMonitor();
         }
@@ -53,13 +54,6 @@ namespace kakarot
         private string lastClipboardText = string.Empty;
         int ContadorDescargas = 0;
         string memoriarutas = "", nivelAnterior = "", nivelAnteriorPre = "", nivelActual = "", repoenuso = "";
-        private void NotifyIcon_DoubleClick(object sender, EventArgs e)
-        {
-            // Restaurar la ventana al hacer doble clic en el ícono
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
-            notifyIcon.Visible = false;
-        }
         static string FindApplicationInCommonPaths(string appName)
         {
             // Directorios comunes donde se instalan aplicaciones
@@ -114,7 +108,7 @@ namespace kakarot
                 this.Hide();
 
                 // Mostrar un mensaje de notificación
-                notifyIcon.ShowBalloonTip(1000, "Aplicación minimizada", "La aplicación está en la bandeja del sistema.", ToolTipIcon.Info);
+                notifyIcon.ShowBalloonTip(1000);//, "Aplicación minimizada", "La aplicación está en la bandeja del sistema.", ToolTipIcon.Info);
             }
 
         }
@@ -189,7 +183,7 @@ namespace kakarot
                             }
                             b++;
                         }
-                       
+
                     }
                     if (ContadorDescargas == 2)
                     {
@@ -423,7 +417,7 @@ namespace kakarot
             Clipboard.Clear();
             webBrowser.Navigate("https://msxscans.file-hunter.com/");
             ConfigureListBoxAppearance(listBox1);
-            Favoritos = AddMenuItem(contextMenuStrip1, "Favoritos", 9, false, "FavoritosMenu");
+            Favoritos = AddMenuItem(contextMenuStrip1, "Favoritos", 0, false, "FavoritosMenu");
             if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
             if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
             if (!Directory.Exists(Application.StartupPath + "\\launcher")) Directory.CreateDirectory(Application.StartupPath + "\\launcher");
@@ -479,7 +473,7 @@ namespace kakarot
                 /* config.AppSettings.Settings["OpenMSXPath"].Value = PathOpenMSX;
                  config.Save(ConfigurationSaveMode.Modified);
                  ConfigurationManager.RefreshSection("appSettings");*/
-                OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 4, false, "MenuOpenMSX");
+                OpenMSX = AddMenuItem(contextMenuStrip1, "OpenMSX", 6, false, "MenuOpenMSX");
                 //AddSubMenuItemToolStrip(OpenMSX, "TIPO DE MAPPER", true, clickedItem =>
                 //{
                 //    //MessageBox.Show(selectedItem);
@@ -500,7 +494,7 @@ namespace kakarot
                             Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
                             string fileName = uri.Segments[uri.Segments.Length - 1];
                             // archivosdescargados = "Descargado ";
-                            TaskDownloadFileArchivos(Application.StartupPath + "\\tmp\\" + fileName.Replace("%20", "_"), uri.ToString(), true);
+                            TaskDownloadFileArchivos(Application.StartupPath + "\\tmp\\" + fileName.Replace("%20", "_"), uri.ToString(), true, false);
                         }
                     }
                     if (IsControlVisible(dataGridView2))
@@ -516,7 +510,7 @@ namespace kakarot
                             Uri uri = new Uri(row.Cells["Url"].Value.ToString());
                             string fileName = uri.Segments[uri.Segments.Length - 1];
                             // archivosdescargados = "Descargado ";
-                            TaskDownloadFileArchivos(Application.StartupPath + "\\tmp\\" + fileName.Replace("%20", "_"), uri.ToString(), true);
+                            TaskDownloadFileArchivos(Application.StartupPath + "\\tmp\\" + fileName.Replace("%20", "_"), uri.ToString(), true, false);
 
                         }
                     }
@@ -552,9 +546,9 @@ namespace kakarot
                             var p = Process.Start(psi);
                             this.WindowState = FormWindowState.Minimized;
                             p.WaitForExit();
-                            //borraremos el contenido de tmp
                             ClearDirectory(Application.StartupPath + "\\tmp\\");
-                            NotifyIcon_DoubleClick(sender, e);
+                            MouseEventArgs f = null;
+                            notifyIcon_MouseDoubleClick(sender, f);
                         }
                         catch (IOException)
                         {
@@ -565,7 +559,7 @@ namespace kakarot
             }
             if (Directory.GetFiles(Application.StartupPath + "\\launcher").Length > 0)
             {
-                Launcher = AddMenuItem(contextMenuStrip1, "Launcher", 9, false, "LaunchApps");
+                Launcher = AddMenuItem(contextMenuStrip1, "Launcher", 2, false, "LaunchApps");
                 foreach (string file in Directory.GetFiles(Application.StartupPath + "\\launcher"))
                 {
                     string Shortfile = Path.GetFileNameWithoutExtension(file);
@@ -654,7 +648,6 @@ namespace kakarot
             }
 
         }
-
         private void ApplyFilter(string filterText, object target, DataTable _dataTable = null)
         {
             try
@@ -721,8 +714,8 @@ namespace kakarot
                         try
                         {
                             // dataGridView1.Rows[0].Selected = true;
-                            Uri url = new Uri(dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString());
-                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                            //Uri url = new Uri(dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString());
+                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + Path.GetFileName((dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString()));// + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
                             // tooStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
                         }
                         catch { }
@@ -732,9 +725,10 @@ namespace kakarot
                         try
                         {
                             //dataGridView2.Rows[0].Selected = true;
-                            Uri url = new Uri(dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString());
-                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+                            //Uri url = new Uri(dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString());
+                            //toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
                             //  toolStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
+                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + Path.GetFileName((dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString()));
                         }
                         catch { }
                     }
@@ -994,7 +988,7 @@ namespace kakarot
                                 Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
                                 string fileName = uri.Segments[uri.Segments.Length - 1];
                                 archivosdescargados = "Descargado ";
-                                TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
+                                TaskDownloadFileArchivos(paz + "\\" + fileName, new Uri(uri.ToString().Replace("#", "%23").Replace(" ","%20")).AbsoluteUri, false, false);
                             }
                             else { return; }
                         }
@@ -1022,7 +1016,7 @@ namespace kakarot
                                 Uri uri = new Uri(row.Cells["Url"].Value.ToString());
                                 string fileName = uri.Segments[uri.Segments.Length - 1];
                                 archivosdescargados = "Descargado ";
-                                TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false);
+                                TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false, false);
                             }
                             else { return; }
                         }
@@ -1080,19 +1074,17 @@ namespace kakarot
 
                             }
                         }
-                        TaskDownloadFileArchivos(fbd.SelectedPath + "\\" + fileName, url, false);
+                        TaskDownloadFileArchivos(fbd.SelectedPath + "\\" + fileName, url, false, false);
                     }
                     else
                     { return; }
                 }
             }
         }
-        private async Task TaskDownloadFileArchivos(string Filename, string Uri, bool runInOpenMSX)
+        private async Task TaskDownloadFileArchivos(string Filename, string Uri, bool runInOpenMSX, bool executeFile)
         {
             WebClient client = new WebClient();
-            client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX);
-            //var eventHandler = new AsyncCompletedEventHandler(DownloadFileCompletedArchivos(Filename, runInOpenMSX));
-            // eventHandler.Invoke(null, new AsyncCompletedEventArgs(null, false, new Exception("404: Not Found")));
+            client.DownloadFileCompleted += DownloadFileCompletedArchivos(Filename, runInOpenMSX, executeFile);
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => DownloadProgressCallbackArchivos(Filename, sender, e));
             await client.DownloadFileTaskAsync(Uri, Filename);
         }
@@ -1161,13 +1153,15 @@ namespace kakarot
             // Retornar True si el usuario selecciona 'Sí', False si selecciona 'No'
             return result == DialogResult.Yes;
         }
-        public AsyncCompletedEventHandler DownloadFileCompletedArchivos(string filename, bool runInOpenMSX)
+        public AsyncCompletedEventHandler DownloadFileCompletedArchivos(string filename, bool runInOpenMSX, bool executeFile)
         {
 
             Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
             {
-
-                var _filename = filename;
+                
+                string NewName = filename.Replace("%20", "_");
+                File.Move(filename, NewName);
+                var _filename = NewName;
                 if (e.Error != null)
                 {
 
@@ -1278,27 +1272,79 @@ namespace kakarot
                         //Hay que tratar el resto de archivos?¿?¿
                     }
                     else
+                    {
                         //comprobar en caso de ser zip si hay que descomprimir
                         //....todo
                         if (descomprimirDespuesDeDescargarToolStripMenuItem.Checked)
-                    {
-                        if (filename.ToLower().EndsWith(".zip"))
                         {
-                            string nombre = System.IO.Path.GetFileName(filename);
-                            string path = System.IO.Path.GetDirectoryName(filename);
-                            ZipFile.ExtractToDirectory(filename, path + "\\" + nombre.Replace(".zip", ""));
-                            File.Delete(filename);
+                            if (filename.ToLower().EndsWith(".zip"))
+                            {
+                                string nombre = System.IO.Path.GetFileName(filename);
+                                string path = System.IO.Path.GetDirectoryName(filename);
+                                ZipFile.ExtractToDirectory(filename, path + "\\" + nombre.Replace(".zip", ""));
+                                File.Delete(filename);
+                            }
                         }
+                        if (executeFile)
+                        {
+                            Uri url = new Uri(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
+                            //if (InvokeRequired) { toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/') + " Descargado, ejecutando..."); }
+                            //else { toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/') + " Descargado, ejecutando..."); }
+                            try
+                            {
+
+                                EjecutarProcesoAsync(filename);
+                                // Abre el archivo con la aplicación predeterminada
+                                //var process = new Process
+                                //{
+                                //    StartInfo = new ProcessStartInfo
+                                //    {
+                                //        FileName = filename,
+                                //        UseShellExecute = true // Abre con la aplicación predeterminada
+                                //    }
+                                //};
+                                //// Iniciar el proceso
+                                //process.Start();
+                                //// Esperar a que el proceso finalice
+                                //process.WaitForExit();
+                                //borraremos el contenido de tmp
+
+                            }
+                            catch (Exception ex)
+                            {
+                                // Manejo de errores
+                                //  Console.WriteLine($"No se pudo abrir el archivo: {ex.Message}");
+                            }
+                        }
+
                     }
                     archivosdescargados += filename + " ";
                     toolStripStatusLabel1.Text = archivosdescargados;
                 }
-
-
+            };
+            return new AsyncCompletedEventHandler(action);
+        }
+        public async Task EjecutarProcesoAsync(string filename)
+        {
+            this.WindowState = FormWindowState.Minimized;
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = filename,
+                    UseShellExecute = true // Abre con la aplicación predeterminada
+                }
             };
 
-            return new AsyncCompletedEventHandler(action);
+            // Iniciar el proceso
+            process.Start();
 
+            // Esperar de forma asíncrona a que el proceso finalice
+            await Task.Run(() => process.WaitForExit());
+            ClearDirectory(Application.StartupPath + "\\tmp\\");
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+            notifyIcon.Visible = false;
         }
         /// <summary>
         /// Borra el contenido de un directorio, incluyendo archivos y subdirectorios.
@@ -1326,7 +1372,19 @@ namespace kakarot
         {
             // Ejemplo: mostrar progreso y nombre de archivo
             //this.Focus();
-            toolStripStatusLabel1.Text = "Descargando " + nombreArchivo + " " + e.ProgressPercentage + "% de ( " + e.BytesReceived + " / " + e.TotalBytesToReceive + ")";
+            if (this.InvokeRequired) // Verifica si se necesita invocar en el hilo principal
+            {
+                // Si InvokeRequired es true, usamos Invoke para realizar la actualización en el hilo principal
+                this.Invoke(new Action(() =>
+                {
+                    toolStripStatusLabel1.Text = "Descargando " + Path.GetFileName(nombreArchivo) + " " + e.ProgressPercentage + "% de ( " + e.BytesReceived + " / " + e.TotalBytesToReceive + ")";
+                }));
+            }
+            else
+            {
+                // Si ya estamos en el hilo principal, actualizamos directamente
+                toolStripStatusLabel1.Text = "Descargando " + Path.GetFileName(nombreArchivo) + " " + e.ProgressPercentage + "% de ( " + e.BytesReceived + " / " + e.TotalBytesToReceive + ")";
+            }
         }
         private readonly static string reservedCharacters = "!*'();:@&=+$,?%#[]";
         public static string UrlEncode(string value)
@@ -1382,7 +1440,14 @@ namespace kakarot
             {
                 Uri url = new Uri(dataGridView2.CurrentRow.Cells["Url"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png") || toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
+                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png") || toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg") || toolStripStatusLabel1.Text.ToLower().EndsWith(".pdf"))
+                {
+                    MuestraImagentoolStripMenuItem1.Enabled = true;
+                }
+                else
+                {
+                    MuestraImagentoolStripMenuItem1.Enabled = false;
+                }
             }
         }
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
@@ -1391,7 +1456,15 @@ namespace kakarot
             {
                 Uri url = new Uri(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png") || toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg")) { MuestraImagentoolStripMenuItem1.Enabled = true; } else { MuestraImagentoolStripMenuItem1.Enabled = false; }
+
+                if (toolStripStatusLabel1.Text.ToLower().EndsWith(".png") || toolStripStatusLabel1.Text.ToLower().EndsWith(".jpg") || toolStripStatusLabel1.Text.ToLower().EndsWith(".pdf"))
+                {
+                    MuestraImagentoolStripMenuItem1.Enabled = true;
+                }
+                else
+                {
+                    MuestraImagentoolStripMenuItem1.Enabled = false;
+                }
             }
         }
         private void toolStripComboBox3_SelectedIndexChanged(object sender, EventArgs e)
@@ -1659,7 +1732,7 @@ namespace kakarot
 
                                     }
                                 }
-                                TaskDownloadFileArchivos(folder + "\\" + fileName, url, false);
+                                TaskDownloadFileArchivos(folder + "\\" + fileName, url, false, false);
 
                             }
                         }
@@ -1674,20 +1747,20 @@ namespace kakarot
         {
             if (filehunterToolStripMenuItem.Checked) { return; }
             if (PathOpenMSX is not null) OpenMSX.Enabled = true;
-                verNovedadesToolStripMenuItem.Checked = false;
-                webMSXToolStripMenuItem.Enabled = true;
-                toolStripComboBox3.Enabled = true;
-                verNovedadesToolStripMenuItem.Enabled = true;
-                foreach (ToolStripMenuItem item in reposToolStripMenuItem.DropDownItems) { item.Checked = false; }
-                filehunterToolStripMenuItem.Checked = true;
-                listBox1.Visible = false;
-                listBox2.Visible = false;
-                dataGridView1.BringToFront();
-                dataGridView1.Visible = true;
-                panel1.BringToFront();
-                Uri url = new Uri(dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString());
-                toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-     
+            verNovedadesToolStripMenuItem.Checked = false;
+            webMSXToolStripMenuItem.Enabled = true;
+            toolStripComboBox3.Enabled = true;
+            verNovedadesToolStripMenuItem.Enabled = true;
+            foreach (ToolStripMenuItem item in reposToolStripMenuItem.DropDownItems) { item.Checked = false; }
+            filehunterToolStripMenuItem.Checked = true;
+            listBox1.Visible = false;
+            listBox2.Visible = false;
+            dataGridView1.BringToFront();
+            dataGridView1.Visible = true;
+            panel1.BringToFront();
+            Uri url = new Uri(dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString());
+            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
+
         }
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
@@ -2294,7 +2367,7 @@ namespace kakarot
 
                                     }
                                 }
-                                TaskDownloadFileArchivos(fbd.SelectedPath + "\\" + fileName, url, false);
+                                TaskDownloadFileArchivos(fbd.SelectedPath + "\\" + fileName, url, false, false);
                             }
                         }
 
@@ -2472,43 +2545,66 @@ namespace kakarot
         {
             if (IsControlVisible(dataGridView1))
             {
-                if (dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".png") || dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".jpg"))
+                if (dataGridView1.SelectedRows.Count > 0 &&
+                    (dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".png") ||
+                     dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".jpg")))
                 {
                     foreach (DataGridViewRow rou in dataGridView1.SelectedRows)
                     {
                         AbreImagen(rou.Cells["FilePath"].Value.ToString());
                     }
                 }
+                if (dataGridView1.SelectedRows.Count > 0 &&
+                    dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString().ToLower().EndsWith(".pdf"))
+                {
+                    foreach (DataGridViewRow rou in dataGridView1.SelectedRows)
+                    {
+                        Uri uri = new Uri(rou.Cells["FilePath"].Value.ToString());
+                        string fileName = uri.Segments[uri.Segments.Length - 1];
+                        toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + fileName + " Descargando...";
+                        TaskDownloadFileArchivos(Application.StartupPath + "tmp\\" + fileName, uri.ToString(), false, true);
+                    }
+                }
             }
             if (IsControlVisible(dataGridView2))
             {
-                if (dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString().ToLower().EndsWith(".png") || dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString().ToLower().EndsWith(".jpg"))
+                if (dataGridView2.SelectedRows.Count > 0 &&
+                    (dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString().ToLower().EndsWith(".png") ||
+                     dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString().ToLower().EndsWith(".jpg")))
+                {
                     foreach (DataGridViewRow rou in dataGridView2.SelectedRows)
                     {
                         AbreImagen(rou.Cells["Url"].Value.ToString());
                     }
+                }
+                if (dataGridView2.SelectedRows.Count > 0 &&
+                    dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString().ToLower().EndsWith(".pdf"))
+                {
+                    foreach (DataGridViewRow rou in dataGridView2.SelectedRows)
+                    {
+                        Uri uri = new Uri(rou.Cells["Url"].Value.ToString());
+                        string fileName = uri.Segments[uri.Segments.Length - 1];
+                        toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + fileName + " Descargando...";
+                        TaskDownloadFileArchivos(Application.StartupPath + "tmp\\" + fileName, uri.ToString(), false, true);
+                    }
+                }
             }
         }
         private void bASROMToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //https://github.com/amaurycarvalho/msxbas2rom
         }
+        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+            notifyIcon.Visible = false;
+        }
+
+        private void copiarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
     }
-}
-
-
-public class FileData
-{
-    public string Hash { get; set; }
-    public string FilePath { get; set; }
-    public string Date { get; set; }
-    public string Status { get; set; }
-    public string Url { get; set; }
-}
-
-internal class SectorData
-{
-    public byte[] Data { get; set; }
-    public int Size { get; set; }
 }
 
