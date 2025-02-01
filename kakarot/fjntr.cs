@@ -10,17 +10,10 @@ using System.Text;
 using System.Reflection;
 using Konamiman.JoySerTrans;
 using System.Globalization;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Security.Policy;
-using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Windows.Forms;
 using System.Net.Http.Headers;
-using kakarot.Properties;
-using System.Resources;
 
 
 namespace kakarot
@@ -1748,7 +1741,8 @@ namespace kakarot
 
                                     }
                                 }
-                                TaskDownloadFileArchivos(folder + "\\" + fileName, url, false, false);
+                                string nombreArchivo = Path.GetFileName(new Uri(url).AbsolutePath);
+                                TaskDownloadFileArchivos(folder + "\\" + nombreArchivo, url, false, false);
 
                             }
                         }
