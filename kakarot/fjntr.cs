@@ -563,16 +563,20 @@ namespace kakarot
                 foreach (string file in Directory.GetFiles(Application.StartupPath + "\\launcher"))
                 {
                     string Shortfile = Path.GetFileNameWithoutExtension(file);
-                    AddSubMenuItemToolStrip(Launcher, Shortfile, false, clickedItem =>
+                    if (file.ToLower().EndsWith(".exe"))
                     {
-                        ProcessStartInfo psi = new ProcessStartInfo();
-                        psi.CreateNoWindow = true;
-                        psi.UseShellExecute = false;
-                        psi.FileName = file;
-                        //   psi.Arguments = "-" + argumentos + argumentoCompresion + " tmp.DSK " + Application.StartupPath + "\\tmp.ROM";
-                        var p = Process.Start(psi);
-                        p.WaitForExit();
-                    }, "EjecutaSelecionadoLauncher" + Shortfile, false);
+                        AddSubMenuItemToolStrip(Launcher, Shortfile, false, clickedItem =>
+                        {
+                            ProcessStartInfo psi = new ProcessStartInfo();
+                            psi.CreateNoWindow = true;
+                            psi.UseShellExecute = false;
+                            psi.FileName = file;
+                            //   psi.Arguments = "-" + argumentos + argumentoCompresion + " tmp.DSK " + Application.StartupPath + "\\tmp.ROM";
+                            var p = Process.Start(psi);
+                            p.WaitForExit();
+                        }, "EjecutaSelecionadoLauncher" + Shortfile, false);
+                    }
+
                 }
             }
             descomprimirDespuesDeDescargarToolStripMenuItem.Checked = bool.Parse(ConfigurationManager.AppSettings["DescomprimirDespuesdeDescargar"]);
