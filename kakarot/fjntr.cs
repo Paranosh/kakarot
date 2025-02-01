@@ -133,9 +133,9 @@ namespace kakarot
                 {
                     ContadorDescargas++;
                     //terminó
-                    if (filename == "sha1sums.txt")
+                    if (filename == "allfiles.txt")
                     {
-                        listado = File.ReadAllText("sha1sums.txt");
+                        listado = File.ReadAllText("allfiles.txt");
                         File.Delete(filename);
                         // Separar el string en líneas
                         string[] lines = listado.Trim().Split('\n');
@@ -143,16 +143,24 @@ namespace kakarot
                         fileList = new List<FileData>();
                         foreach (var line in lines)
                         {
-                            // Separar la línea en dos partes: Hash y FilePath
-                            string[] parts = line.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                            // Si la línea tiene dos partes, las asignamos a un objeto FileData
-                            if (parts.Length == 2)
+                            if (filename == "allfiles.txt")
                             {
-                                fileList.Add(new FileData
+                                fileList.Add(new FileData { FilePath = "https://download.file-hunter.com/" + line });
+                            }
+                            if (filename == "sha1sums.txt")
+                            {
+
+                                // Separar la línea en dos partes: Hash y FilePath
+                                string[] parts = line.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                                // Si la línea tiene dos partes, las asignamos a un objeto FileData
+                                if (parts.Length == 2)
                                 {
-                                    Hash = parts[0].Trim(),
-                                    FilePath = "https://download.file-hunter.com" + parts[1].Trim().Replace("\\", "/").Substring(1, parts[1].Trim().Length - 1)
-                                });
+                                    fileList.Add(new FileData
+                                    {
+                                        Hash = parts[0].Trim(),
+                                        FilePath = "https://download.file-hunter.com" + parts[1].Trim().Replace("\\", "/").Substring(1, parts[1].Trim().Length - 1)
+                                    });
+                                }
                             }
                         }
                     }
@@ -597,7 +605,7 @@ namespace kakarot
             }
             if (toolStripComboBox2.Items.Count == 0) { toolStripComboBox2.Items.Add("Sin Puertos Com"); } else { toolStripComboBox2.SelectedIndex = 0; }
             toolStripComboBox4.SelectedIndex = 1;
-            var file1DownloadTask1 = TaskDownloadFile("sha1sums.txt", "https://download.file-hunter.com/sha1sums.txt");
+            var file1DownloadTask1 = TaskDownloadFile("allfiles.txt", "https://download.file-hunter.com/allfiles.txt");
             var file1DownloadTask2 = TaskDownloadFile("Update-Log.txt", "https://download.file-hunter.com/Update-Log.txt");
         }
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
