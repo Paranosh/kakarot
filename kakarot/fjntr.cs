@@ -305,11 +305,12 @@ namespace kakarot
         /// <param name="parentItem">El elemento principal al cual agregar el subitem.</param>
         /// <param name="subItemText">El texto del subitem.</param>
         /// <returns>El subitem creado.</returns>
-        static ToolStripMenuItem AddSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemText, bool Addseparator, Action<bool> clickedItem, string Name, bool ischeckbox)
+        static ToolStripMenuItem AddSubMenuItemToolStrip(ToolStripMenuItem parentItem, string subItemText, bool Addseparator, Action<bool> clickedItem, string Name, bool ischeckbox, Image icon = null)
         {
 
             // Crear un nuevo ToolStripMenuItem como subitem
             ToolStripMenuItem subItem = new ToolStripMenuItem(subItemText);
+            subItem.Image = icon;
             subItem.Name = Name;
             // Asociar un evento Click al subitem
             subItem.Click += (sender, e) =>
@@ -565,6 +566,8 @@ namespace kakarot
                     string Shortfile = Path.GetFileNameWithoutExtension(file);
                     if (file.ToLower().EndsWith(".exe"))
                     {
+                        Icon fileIcon = Icon.ExtractAssociatedIcon(file);
+                        Bitmap IconImage = fileIcon?.ToBitmap(); // Convierte el icono a Bitmap
                         AddSubMenuItemToolStrip(Launcher, Shortfile, false, clickedItem =>
                         {
                             ProcessStartInfo psi = new ProcessStartInfo();
@@ -574,7 +577,7 @@ namespace kakarot
                             //   psi.Arguments = "-" + argumentos + argumentoCompresion + " tmp.DSK " + Application.StartupPath + "\\tmp.ROM";
                             var p = Process.Start(psi);
                             p.WaitForExit();
-                        }, "EjecutaSelecionadoLauncher" + Shortfile, false);
+                        }, "EjecutaSelecionadoLauncher" + Shortfile, false, IconImage);
                     }
 
                 }
