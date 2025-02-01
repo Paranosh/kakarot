@@ -979,7 +979,7 @@ namespace kakarot
                         {
                             //folderDialog.Description = "Seleccione la carpeta donde se descargará el archivo:";
                             folderDialog.ShowNewFolderButton = true;
-
+                            //https://download.file-hunter.com/Games/MSX2+/DSK/Sonyc%20(1995)%20(Analogy).zip
                             // Mostrar el cuadro de diálogo
                             if (folderDialog.ShowDialog() == DialogResult.OK)
                             {
@@ -988,7 +988,8 @@ namespace kakarot
                                 Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
                                 string fileName = uri.Segments[uri.Segments.Length - 1];
                                 archivosdescargados = "Descargado ";
-                                TaskDownloadFileArchivos(paz + "\\" + fileName, new Uri(uri.ToString().Replace("#", "%23").Replace(" ","%20")).AbsoluteUri, false, false);
+                                var myuri = new Uri(uri.ToString()).AbsoluteUri;    
+                                TaskDownloadFileArchivos(paz + "\\" + fileName, myuri, false, false);
                             }
                             else { return; }
                         }
@@ -1016,7 +1017,7 @@ namespace kakarot
                                 Uri uri = new Uri(row.Cells["Url"].Value.ToString());
                                 string fileName = uri.Segments[uri.Segments.Length - 1];
                                 archivosdescargados = "Descargado ";
-                                TaskDownloadFileArchivos(paz + "\\" + fileName.Replace("%20", "_"), uri.ToString(), false, false);
+                                TaskDownloadFileArchivos(paz + "\\" + fileName, uri.ToString(), false, false);
                             }
                             else { return; }
                         }
@@ -1159,9 +1160,9 @@ namespace kakarot
             Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
             {
                 
-                string NewName = filename.Replace("%20", "_");
+                string NewName = filename.Replace("%20", "_").Replace("%23","Num.");
                 File.Move(filename, NewName);
-                var _filename = NewName;
+                filename = NewName;
                 if (e.Error != null)
                 {
 
