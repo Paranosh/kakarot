@@ -145,7 +145,7 @@ namespace kakarot
                         {
                             if (filename == "allfiles.txt")
                             {
-                                fileList.Add(new FileData { FilePath = "https://download.file-hunter.com/" + line });
+                                fileList.Add(new FileData { Hash = "null", FilePath = "https://download.file-hunter.com/" + line.Replace("\r","") });
                             }
                             if (filename == "sha1sums.txt")
                             {
@@ -2445,7 +2445,7 @@ namespace kakarot
             // Crear y configurar el formulario
             Form form = new Form
             {
-                Text = "Visor de Imagen",
+                Text = "EasyViewer",
                 StartPosition = FormStartPosition.CenterScreen,
                 BackColor = SystemColors.ControlDarkDark, // Color de fondo del formulario
                 ClientSize = new Size(1024, 768), // Tamaño fijo del formulario
