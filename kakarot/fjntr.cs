@@ -112,6 +112,7 @@ namespace kakarot
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
             await client.DownloadFileTaskAsync(Uri, Filename);
         }
+        
         public AsyncCompletedEventHandler DownloadFileCompleted(string filename)
         {
             Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
@@ -1414,19 +1415,34 @@ namespace kakarot
         }
         private void webMSXToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.CurrentRow is not null)
-            {
-                string url = "";
-                if (IsControlVisible(dataGridView1)) url = UrlEncode(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
-                if (IsControlVisible(dataGridView2)) url = dataGridView2.CurrentRow.Cells["Url"].Value.ToString();
-                //no multiple seleccion
-                int a = 0;
-                foreach (DataGridViewRow row in dataGridView1.SelectedRows)
+            if (IsControlVisible(dataGridView1)){
+                if (dataGridView1.CurrentRow is not null)
                 {
-                    a++;
+                    string url = UrlEncode(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
+                   // if (IsControlVisible(dataGridView2)) url = dataGridView2.CurrentRow.Cells["Url"].Value.ToString();
+                    //no multiple seleccion
+                    int a = 0;
+                    foreach (DataGridViewRow row in dataGridView1.SelectedRows)
+                    {
+                        a++;
+                    }
+                    if (a > 1) { MessageBox.Show("Seleccione solo un elemento de la lista, por favor.", "Atencion", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                    Process.Start(new ProcessStartInfo("https://download.file-hunter.com/assets/webmsx.html?url=" + url) { UseShellExecute = true });
                 }
-                if (a > 1) { MessageBox.Show("Seleccione solo un elemento de la lista, por favor.", "Atencion", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-                Process.Start(new ProcessStartInfo("https://download.file-hunter.com/assets/webmsx.html?url=" + url) { UseShellExecute = true });
+            }
+            if (IsControlVisible(dataGridView2)){
+                if (dataGridView2.CurrentRow is not null)
+                {
+                    string url = dataGridView2.CurrentRow.Cells["Url"].Value.ToString();
+                    //no multiple seleccion
+                    int a = 0;
+                    foreach (DataGridViewRow row in dataGridView2.SelectedRows)
+                    {
+                        a++;
+                    }
+                    if (a > 1) { MessageBox.Show("Seleccione solo un elemento de la lista, por favor.", "Atencion", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                    Process.Start(new ProcessStartInfo("https://download.file-hunter.com/assets/webmsx.html?url=" + url) { UseShellExecute = true });
+                }
             }
         }
         private void descomprimirDespuesDeDescargarToolStripMenuItem_Click(object sender, EventArgs e)
