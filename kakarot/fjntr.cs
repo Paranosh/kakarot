@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using Microsoft.Win32;
 
 
 namespace kakarot
@@ -112,7 +113,7 @@ namespace kakarot
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
             await client.DownloadFileTaskAsync(Uri, Filename);
         }
-        
+
         public AsyncCompletedEventHandler DownloadFileCompleted(string filename)
         {
             Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
@@ -139,7 +140,7 @@ namespace kakarot
                         {
                             if (filename == "allfiles.txt")
                             {
-                                fileList.Add(new FileData { Hash = "null", FilePath = "https://download.file-hunter.com/" + line.Replace("\r","") });
+                                fileList.Add(new FileData { Hash = "null", FilePath = "https://download.file-hunter.com/" + line.Replace("\r", "") });
                             }
                             if (filename == "sha1sums.txt")
                             {
@@ -585,6 +586,7 @@ namespace kakarot
                 }
             }
             descomprimirDespuesDeDescargarToolStripMenuItem.Checked = bool.Parse(ConfigurationManager.AppSettings["DescomprimirDespuesdeDescargar"]);
+            integrarLanzadorConOSToolStripMenuItem.Checked = bool.Parse(ConfigurationManager.AppSettings["IntegrarLanzadorConOS"]);
             //listamos los puertos com si existen en el equipo si no devolvera la palabra null
             string[] comPorts = SerialPort.GetPortNames();
 
@@ -997,7 +999,7 @@ namespace kakarot
                                 Uri uri = new Uri(row.Cells["FilePath"].Value.ToString());
                                 string fileName = uri.Segments[uri.Segments.Length - 1];
                                 archivosdescargados = "Descargado ";
-                                var myuri = new Uri(uri.ToString()).AbsoluteUri;    
+                                var myuri = new Uri(uri.ToString()).AbsoluteUri;
                                 TaskDownloadFileArchivos(paz + "\\" + fileName, myuri, false, false);
                             }
                             else { return; }
@@ -1168,8 +1170,8 @@ namespace kakarot
 
             Action<object, AsyncCompletedEventArgs> action = (sender, e) =>
             {
-                
-                string NewName = filename.Replace("%20", "_").Replace("%23","Num.");
+
+                string NewName = filename.Replace("%20", "_").Replace("%23", "Num.");
                 File.Move(filename, NewName);
                 filename = NewName;
                 if (e.Error != null)
@@ -1415,11 +1417,12 @@ namespace kakarot
         }
         private void webMSXToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (IsControlVisible(dataGridView1)){
+            if (IsControlVisible(dataGridView1))
+            {
                 if (dataGridView1.CurrentRow is not null)
                 {
                     string url = UrlEncode(dataGridView1.CurrentRow.Cells["FilePath"].Value.ToString());
-                   // if (IsControlVisible(dataGridView2)) url = dataGridView2.CurrentRow.Cells["Url"].Value.ToString();
+                    // if (IsControlVisible(dataGridView2)) url = dataGridView2.CurrentRow.Cells["Url"].Value.ToString();
                     //no multiple seleccion
                     int a = 0;
                     foreach (DataGridViewRow row in dataGridView1.SelectedRows)
@@ -1430,7 +1433,8 @@ namespace kakarot
                     Process.Start(new ProcessStartInfo("https://download.file-hunter.com/assets/webmsx.html?url=" + url) { UseShellExecute = true });
                 }
             }
-            if (IsControlVisible(dataGridView2)){
+            if (IsControlVisible(dataGridView2))
+            {
                 if (dataGridView2.CurrentRow is not null)
                 {
                     string url = dataGridView2.CurrentRow.Cells["Url"].Value.ToString();
@@ -2631,6 +2635,119 @@ namespace kakarot
         {
 
         }
+
+        private void integrarLanzadorConOSToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            if (integrarLanzadorConOSToolStripMenuItem.Checked)
+            {
+                config.AppSettings.Settings["IntegrarLanzadorConOS"].Value = "true";
+                ConfigurationManager.RefreshSection("appSettings");
+                IntegraconOS();
+            }
+            else
+            {
+                config.AppSettings.Settings["IntegrarLanzadorConOS"].Value = "false";
+                ConfigurationManager.RefreshSection("appSettings");
+                DesIntegraconOS();
+            }
+            config.Save(ConfigurationSaveMode.Modified);
+            
+        }
+        private void IntegraconOS()
+        {
+            // Obtener ruta de OpenMSX desde tu configuración
+            string openMsxPath = PathOpenMSX;
+
+            // Validar la ruta
+            if (!Program.IsValidOpenMsxPath(openMsxPath))
+            {
+                MessageBox.Show("La ruta de OpenMSX no es válida.\nAsegúrese de que existe y contiene openmsx.exe",
+                                "Error de configuración",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
+
+            // Verificar si ya está instalado
+            var contextMenu = new KakarotContextMenu(openMsxPath);
+            if (contextMenu.IsInstalled())
+            {
+                //MessageBox.Show("La integración con el sistema operativo ya está activa",
+                //                "Información",
+                //                MessageBoxButtons.OK,
+                //                MessageBoxIcon.Information);
+                return;
+            }
+
+            // Mostrar confirmación
+            var result = MessageBox.Show(
+                "Se solicitarán permisos de administrador para integrar con el sistema operativo.\n\n" +
+                "¿Desea continuar?",
+                "Confirmar integración",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result != DialogResult.Yes) return;
+
+            // Reiniciar como administrador con argumentos
+            string arguments = $"{Program.InstallArg} \"{openMsxPath}\"";
+
+            if (AdminUtils.RestartAsAdmin(arguments))
+            {
+                // Cerrar la aplicación actual
+                Application.Exit();
+            }
+            else
+            {
+                MessageBox.Show("No se pudo reiniciar como administrador.\n" +
+                               "Por favor, ejecute la aplicación manualmente como administrador.",
+                               "Error",
+                               MessageBoxButtons.OK,
+                               MessageBoxIcon.Error);
+            }
+        }
+        private void DesIntegraconOS()
+        {
+            // Crear instancia para verificar instalación
+            var contextMenu = new KakarotContextMenu(null);
+
+            // Verificar si está instalado
+            if (!contextMenu.IsInstalled())
+            {
+                //MessageBox.Show("La integración con el sistema operativo no está instalada",
+                //                "Información",
+                //                MessageBoxButtons.OK,
+                //                MessageBoxIcon.Information);
+                return;
+            }
+
+            // Mostrar confirmación
+            var result = MessageBox.Show(
+                "¿Está seguro que desea desinstalar la integración con el sistema operativo?\n\n" +
+                "Esto eliminará la opción 'Lanzar con OpenMSX' del menú contextual.\n\n"+
+                "Recuerde que son necesarios privilegios de Administrador.",
+                "Confirmar desinstalación",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2);
+
+            if (result != DialogResult.Yes) return;
+
+            // Reiniciar como administrador para desinstalar
+            if (AdminUtils.RestartAsAdmin(Program.UninstallArg))
+            {
+                // Cerrar la aplicación actual
+                Application.Exit();
+            }
+            else
+            {
+                MessageBox.Show("No se pudo reiniciar como administrador.\n" +
+                               "Por favor, ejecute la aplicación manualmente como administrador.",
+                               "Error",
+                               MessageBoxButtons.OK,
+                               MessageBoxIcon.Error);
+            }
+        }
     }
 }
-
