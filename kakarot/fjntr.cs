@@ -421,7 +421,7 @@ namespace kakarot
             Clipboard.Clear();
             webBrowser.Navigate("https://msxscans.file-hunter.com/");
             ConfigureListBoxAppearance(listBox1);
-            Favoritos = AddMenuItem(contextMenuStrip1, "Favoritos", 0, false, "FavoritosMenu");
+            Favoritos = AddMenuItem(contextMenuStrip1, "Favoritos", 1, false, "FavoritosMenu");
             if (File.Exists(Application.StartupPath + "\\tmp.ROM")) File.Delete(Application.StartupPath + "\\tmp.ROM");
             if (File.Exists(Application.StartupPath + "\\tmp.DSK")) File.Delete(Application.StartupPath + "\\tmp.DSK");
             if (!Directory.Exists(Application.StartupPath + "\\launcher")) Directory.CreateDirectory(Application.StartupPath + "\\launcher");
@@ -2652,7 +2652,7 @@ namespace kakarot
                 DesIntegraconOS();
             }
             config.Save(ConfigurationSaveMode.Modified);
-            
+
         }
         private void IntegraconOS()
         {
@@ -2725,7 +2725,7 @@ namespace kakarot
             // Mostrar confirmación
             var result = MessageBox.Show(
                 "¿Está seguro que desea desinstalar la integración con el sistema operativo?\n\n" +
-                "Esto eliminará la opción 'Lanzar con OpenMSX' del menú contextual.\n\n"+
+                "Esto eliminará la opción 'Lanzar con OpenMSX' del menú contextual.\n\n" +
                 "Recuerde que son necesarios privilegios de Administrador.",
                 "Confirmar desinstalación",
                 MessageBoxButtons.YesNo,
@@ -2748,6 +2748,12 @@ namespace kakarot
                                MessageBoxButtons.OK,
                                MessageBoxIcon.Error);
             }
+        }
+
+        private void verFeedMsxorgToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            msxOrgFeedfrm frm = new msxOrgFeedfrm();
+            frm.Show();
         }
     }
 }
