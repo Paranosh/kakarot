@@ -32,6 +32,7 @@
             listBox1 = new ListBox();
             linkLabel1 = new LinkLabel();
             textBox1 = new TextBox();
+            listBox2 = new ListBox();
             SuspendLayout();
             // 
             // listBox1
@@ -39,9 +40,9 @@
             listBox1.BorderStyle = BorderStyle.None;
             listBox1.FormattingEnabled = true;
             listBox1.ItemHeight = 15;
-            listBox1.Location = new Point(2, 0);
+            listBox1.Location = new Point(145, 1);
             listBox1.Name = "listBox1";
-            listBox1.Size = new Size(623, 210);
+            listBox1.Size = new Size(479, 210);
             listBox1.TabIndex = 0;
             listBox1.Click += listBox1_Click;
             // 
@@ -64,11 +65,23 @@
             textBox1.Size = new Size(623, 23);
             textBox1.TabIndex = 2;
             // 
+            // listBox2
+            // 
+            listBox2.FormattingEnabled = true;
+            listBox2.ItemHeight = 15;
+            listBox2.Location = new Point(6, 0);
+            listBox2.Name = "listBox2";
+            listBox2.SelectionMode = SelectionMode.None;
+            listBox2.Size = new Size(133, 214);
+            listBox2.TabIndex = 3;
+            listBox2.Click += listBox2_Click;
+            // 
             // msxOrgFeedfrm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(626, 264);
+            Controls.Add(listBox2);
             Controls.Add(textBox1);
             Controls.Add(linkLabel1);
             Controls.Add(listBox1);
@@ -86,5 +99,6 @@
         private ListBox listBox1;
         private LinkLabel linkLabel1;
         private TextBox textBox1;
+        private ListBox listBox2;
     }
 }

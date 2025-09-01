@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.ServiceModel.Syndication;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -23,6 +24,7 @@ namespace kakarot
         List<string> noticia = new List<string>();
         List<string> urlnoticia = new List<string>();
         List<string> textonoticia = new List<string>();
+        List<string> fechanoticia = new List<string>();
         private void msxOrgFeedfrm_Load(object sender, EventArgs e)
         {
             string url = "https://www.msx.org/feed/news";
@@ -43,6 +45,8 @@ namespace kakarot
                         noticia.Add(item.Title.Text);
                         urlnoticia.Add(item.Links[0].Uri.ToString());
                         textonoticia.Add(item.Summary.Text);
+                        listBox2.Items.Add(item.PublishDate);
+                        fechanoticia.Add(item.PublishDate.ToString());
                     }
                 }
                 catch (XmlException ex)
@@ -64,6 +68,9 @@ namespace kakarot
                     int index = noticia.IndexOf(item);
                     linkLabel1.Text = urlnoticia[index];
                     textBox1.Text = LimpiaHTML(textonoticia[index]).Trim() + "....";
+                    listBox2.SelectionMode = SelectionMode.One;
+                    listBox2.SelectedIndex = index;
+
                     break;
                 }
             }
@@ -72,10 +79,17 @@ namespace kakarot
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = linkLabel1.Text,
-                        UseShellExecute = true
-                    });
+            {
+                FileName = linkLabel1.Text,
+                UseShellExecute = true
+            });
+        }
+
+        private void listBox2_Click(object sender, EventArgs e)
+        {
+            listBox2.SelectionMode = SelectionMode.None;
+            listBox2.SelectionMode = SelectionMode.One;
+            listBox2.SelectedIndex = listBox1.SelectedIndex;
         }
     }
 }
