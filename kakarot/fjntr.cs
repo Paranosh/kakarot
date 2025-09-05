@@ -2031,39 +2031,62 @@ namespace kakarot
 
         private void verSHA1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var dlg = new OpenFileDialog();
-            dlg.Filter = "Todos los archivos (*.*)|*.*|Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk";
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Todos los archivos (*.*)|*.*|Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk",
+                Multiselect = true,
+                Title = "Seleccione uno o varios archivos para calcular sus hashes"
+            };
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                // romname is the original ROM, patchname is the patch to apply
-                var (sha1, sha256) = ComputeFileHashes(dlg.FileName);
+                // Construir el texto con todos los archivos y sus hashes
+                StringBuilder sb = new StringBuilder();
+                foreach (var filePath in dlg.FileNames)
+                {
+                    var (sha1, sha256) = ComputeFileHashes(filePath);
+                    sb.AppendLine($"Archivo: {Path.GetFileName(filePath)}");
+                    sb.AppendLine($"SHA1: {sha1}");
+                    sb.AppendLine($"SHA256: {sha256}");
+                    sb.AppendLine(); // línea en blanco entre archivos
+                }
 
+                string textToShow = sb.ToString();
+
+                // Crear el formulario único
                 Form form = new Form
                 {
-                    Text = dlg.SafeFileName,
+                    Text = "Hashes de los archivos seleccionados",
                     Icon = this.Icon,
                     StartPosition = FormStartPosition.CenterScreen,
-                    Size = new Size(510, 100),
-                    FormBorderStyle = FormBorderStyle.FixedSingle,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
                     MaximizeBox = false,
-                    MinimizeBox = false
+                    MinimizeBox = false,
+                    Width = 525
                 };
 
-                // TextBox para mostrar los hashes en 2 líneas
+                // TextBox para mostrar los hashes
                 TextBox tb = new TextBox
                 {
                     Multiline = true,
                     ReadOnly = true,
-                    Dock = DockStyle.Top,
-                    Height = 43, // deja espacio para el botón debajo
-                    Text = $"SHA1: {sha1}{Environment.NewLine}SHA256: {sha256}",
-                    ScrollBars = ScrollBars.None,
-                    WordWrap = false
+                    WordWrap = false,
+                    ScrollBars = ScrollBars.Both,
+                    Dock = DockStyle.Fill,
+                    Text = textToShow
                 };
+
                 form.Controls.Add(tb);
+
+                // Ajustar altura según número de líneas, con máximo 600 px
+                int lineHeight = TextRenderer.MeasureText("A", tb.Font).Height;
+                int totalLines = textToShow.Split('\n').Length;
+                int desiredHeight = lineHeight * totalLines + 50; // 50 px extra para bordes
+                form.Height = Math.Min(desiredHeight, 600);
+                tb.Select(0, 0);
                 form.ShowDialog();
             }
+
         }
         private void Sender_DataSent(object sender, int e)
         {
