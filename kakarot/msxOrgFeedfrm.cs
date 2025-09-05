@@ -85,11 +85,14 @@ namespace kakarot
             });
         }
 
-        private void listBox2_Click(object sender, EventArgs e)
+        private void listBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            listBox2.SelectionMode = SelectionMode.None;
-            listBox2.SelectionMode = SelectionMode.One;
             listBox2.SelectedIndex = listBox1.SelectedIndex;
+        }
+
+        private void listBox2_MouseDown(object sender, MouseEventArgs e)
+        {
+            listBox1.SelectedIndex = listBox2.SelectedIndex;
         }
     }
 }

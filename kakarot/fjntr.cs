@@ -1923,7 +1923,8 @@ namespace kakarot
                 {
                     larom = dlg.FileName;
                     rom = Path.GetFileName(larom);
-                    elsha = ComputeFileSha1(larom);
+                    var (sha1, sha256) = ComputeFileHashes(dlg.FileName);
+                    elsha = "SHA1: "+ sha1 + "\r\nSHA256: " + sha256;
                 }
                 else { return; }
                 dlg.Filter = "Archivos ips (*.ips)|*.ips|Todos los archivos (*.*)|*.*";
@@ -1998,7 +1999,7 @@ namespace kakarot
                 MessageBox.Show("Error al aplicar el parche: \r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        public static string ComputeFileSha1(string filePath)
+        public static (string Sha1, string Sha256) ComputeFileHashes(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -2010,21 +2011,58 @@ namespace kakarot
                 throw new FileNotFoundException("El archivo especificado no existe.", filePath);
             }
 
-            using (var sha1 = System.Security.Cryptography.SHA1.Create())
             using (var fileStream = File.OpenRead(filePath))
             {
-                var hashBytes = sha1.ComputeHash(fileStream);
-                return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToUpperInvariant();
+                using (var sha1 = System.Security.Cryptography.SHA1.Create())
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    // Importante: reiniciar posición del stream entre cálculos
+                    var sha1Hash = sha1.ComputeHash(fileStream);
+                    fileStream.Position = 0;
+                    var sha256Hash = sha256.ComputeHash(fileStream);
+
+                    return (
+                        BitConverter.ToString(sha1Hash).Replace("-", string.Empty).ToUpperInvariant(),
+                        BitConverter.ToString(sha256Hash).Replace("-", string.Empty).ToUpperInvariant()
+                    );
+                }
             }
         }
+
         private void verSHA1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var dlg = new OpenFileDialog();
-            dlg.Filter = "Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk|Todos los archivos (*.*)|*.*";
+            dlg.Filter = "Todos los archivos (*.*)|*.*|Archivos ROM (*.rom)|*.rom|Archivos DSK (*.dsk)|*.dsk";
+
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 // romname is the original ROM, patchname is the patch to apply
-                MessageBox.Show(ComputeFileSha1(dlg.FileName), "SHA1");
+                var (sha1, sha256) = ComputeFileHashes(dlg.FileName);
+
+                Form form = new Form
+                {
+                    Text = dlg.SafeFileName,
+                    Icon = this.Icon,
+                    StartPosition = FormStartPosition.CenterScreen,
+                    Size = new Size(510, 100),
+                    FormBorderStyle = FormBorderStyle.FixedSingle,
+                    MaximizeBox = false,
+                    MinimizeBox = false
+                };
+
+                // TextBox para mostrar los hashes en 2 líneas
+                TextBox tb = new TextBox
+                {
+                    Multiline = true,
+                    ReadOnly = true,
+                    Dock = DockStyle.Top,
+                    Height = 43, // deja espacio para el botón debajo
+                    Text = $"SHA1: {sha1}{Environment.NewLine}SHA256: {sha256}",
+                    ScrollBars = ScrollBars.None,
+                    WordWrap = false
+                };
+                form.Controls.Add(tb);
+                form.ShowDialog();
             }
         }
         private void Sender_DataSent(object sender, int e)

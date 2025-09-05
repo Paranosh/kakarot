@@ -45,6 +45,7 @@
             listBox1.Size = new Size(479, 210);
             listBox1.TabIndex = 0;
             listBox1.Click += listBox1_Click;
+            listBox1.MouseDown += listBox1_MouseDown;
             // 
             // linkLabel1
             // 
@@ -71,10 +72,9 @@
             listBox2.ItemHeight = 15;
             listBox2.Location = new Point(6, 0);
             listBox2.Name = "listBox2";
-            listBox2.SelectionMode = SelectionMode.None;
             listBox2.Size = new Size(133, 214);
             listBox2.TabIndex = 3;
-            listBox2.Click += listBox2_Click;
+            listBox2.MouseDown += listBox2_MouseDown;
             // 
             // msxOrgFeedfrm
             // 
