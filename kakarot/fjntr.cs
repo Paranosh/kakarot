@@ -2048,7 +2048,7 @@ namespace kakarot
                     sb.AppendLine($"Archivo: {Path.GetFileName(filePath)}");
                     sb.AppendLine($"SHA1: {sha1}");
                     sb.AppendLine($"SHA256: {sha256}");
-                    sb.AppendLine(); // línea en blanco entre archivos
+                    sb.AppendLine();
                 }
 
                 string textToShow = sb.ToString();
@@ -2065,7 +2065,7 @@ namespace kakarot
                     Width = 525
                 };
 
-                // TextBox para mostrar los hashes
+                // TextBox para mostrar los hashes (declarado antes para usarlo en el botón)
                 TextBox tb = new TextBox
                 {
                     Multiline = true,
@@ -2076,16 +2076,97 @@ namespace kakarot
                     Text = textToShow
                 };
 
+                // Panel para el TextBox de búsqueda y el botón
+                Panel panelTop = new Panel
+                {
+                    Dock = DockStyle.Top,
+                    Height = 30
+                };
+
+                // TextBox de búsqueda
+                TextBox tbSearch = new TextBox
+                {
+                    Width = 422, // ancho menor para dejar espacio al botón
+                    Location = new Point(0, 1),
+                    Text = "Buscar..."
+                };
+
+                // Simular placeholder
+                tbSearch.ForeColor = Color.Gray;
+                tbSearch.Enter += (s, e) =>
+                {
+                    if (tbSearch.Text == "Buscar...")
+                    {
+                        tbSearch.Text = "";
+                        tbSearch.ForeColor = Color.Black;
+                    }
+                };
+                tbSearch.Leave += (s, e) =>
+                {
+                    if (string.IsNullOrWhiteSpace(tbSearch.Text))
+                    {
+                        tbSearch.Text = "Buscar...";
+                        tbSearch.ForeColor = Color.Gray;
+                    }
+                };
+
+                // Botón de búsqueda
+                Button btnSearch = new Button
+                {
+                    Text = "Buscar",
+                    Location = new Point(tbSearch.Right + 5, 0),
+                    Width = 80,
+                    Height = 25
+                };
+
+                // Evento del botón para buscar el texto en el TextBox grande
+                btnSearch.Click += (s, e) =>
+                {
+                    string searchText = tbSearch.Text;
+                    if (!string.IsNullOrEmpty(searchText) && searchText != "Buscar...")
+                    {
+                        int index = tb.Text.IndexOf(searchText, 0, StringComparison.OrdinalIgnoreCase);
+                        if (index >= 0)
+                        {
+                            tb.Focus();           
+                            tb.Select(index, searchText.Length);
+                            tb.ScrollToCaret();
+                           
+                        }
+                        else
+                        {
+                            MessageBox.Show($"No se encontraron coincidencias para '{searchText}'.", "Buscar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        tbSearch.Text = "";
+                    }
+                };
+                tbSearch.KeyDown += (s, e) =>
+                {
+                    if (e.KeyCode == Keys.Enter)
+                    {
+                        btnSearch.PerformClick();
+                        e.Handled = true;
+                        e.SuppressKeyPress = true; // Evitar el sonido de "ding"
+                    }
+                };
+                panelTop.Controls.Add(tbSearch);
+                panelTop.Controls.Add(btnSearch);
+
                 form.Controls.Add(tb);
+                form.Controls.Add(panelTop);
 
                 // Ajustar altura según número de líneas, con máximo 600 px
                 int lineHeight = TextRenderer.MeasureText("A", tb.Font).Height;
                 int totalLines = textToShow.Split('\n').Length;
-                int desiredHeight = lineHeight * totalLines + 50; // 50 px extra para bordes
+                int desiredHeight = lineHeight * totalLines + panelTop.Height + 50; // incluye altura del panel de búsqueda
                 form.Height = Math.Min(desiredHeight, 600);
+
                 tb.Select(0, 0);
                 form.ShowDialog();
             }
+
+
+
 
         }
         private void Sender_DataSent(object sender, int e)
