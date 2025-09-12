@@ -665,15 +665,16 @@ namespace kakarot
             {
                 if (target == null) return;
 
+                // Verificar si el texto es "Sin filtro" (case insensitive)
+                bool mostrarTodo = string.IsNullOrWhiteSpace(filterText) ||
+                                  filterText.Equals("Sin filtro", StringComparison.OrdinalIgnoreCase);
+
                 if (target is ListBox listBox)
                 {
-
-                    // Aplicar el filtro
-                    var filteredItems = string.IsNullOrWhiteSpace(filterText)
-                        ? originalItems // Si no hay filtro, mostrar todos los elementos
+                    var filteredItems = mostrarTodo
+                        ? originalItems
                         : originalItems.Where(item => item.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
 
-                    // Actualizar los elementos del ListBox
                     listBox.BeginUpdate();
                     listBox.Items.Clear();
                     foreach (var item in filteredItems)
@@ -682,17 +683,14 @@ namespace kakarot
                     }
                     listBox.EndUpdate();
 
-                    // Actualizar el estado en un ToolStripStatusLabel si es necesario
                     toolStripStatusLabel1.Text = "Total de elementos: " + listBox.Items.Count;
                 }
                 else if (target is DataGridView dataGridView)
                 {
-                    // Manejar el filtrado en un DataTable asociado a un DataGridView
                     string columnaAbuscar = "";
 
                     if (_dataTable == null) return;
 
-                    // Determinar la columna a buscar
                     if (IsControlVisible(dataGridView1))
                     {
                         columnaAbuscar = "FilePath";
@@ -704,45 +702,34 @@ namespace kakarot
                         else if (checkBox3.Checked) columnaAbuscar = "Url";
                     }
 
-                    // Verificar si columnaAbuscar tiene un valor válido
                     if (string.IsNullOrEmpty(columnaAbuscar))
                     {
                         toolStripStatusLabel1.Text = "No se ha seleccionado una columna para aplicar el filtro.";
                         return;
                     }
 
-                    // Construir la expresión de filtro
-                    string filterExpression = string.IsNullOrWhiteSpace(filterText)
+                    // Aplicar filtro solo si NO es "Sin filtro" y hay texto
+                    string filterExpression = mostrarTodo
                         ? string.Empty
                         : $"{columnaAbuscar} LIKE '%{filterText.Replace("'", "''")}%'";
 
-                    // Aplicar el filtro
                     _dataTable.DefaultView.RowFilter = filterExpression;
-
-                    // Actualizar el estado en el ToolStripStatusLabel
                     if (IsControlVisible(dataGridView1))
                     {
                         try
                         {
-                            // dataGridView1.Rows[0].Selected = true;
-                            //Uri url = new Uri(dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString());
-                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + Path.GetFileName((dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString()));// + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-                            // tooStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
+                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView1.RowCount.ToString() + " --> " + Path.GetFileName((dataGridView1.SelectedRows[0].Cells["FilePath"].Value.ToString()));
                         }
                         catch { }
                     }
-                    if (IsControlVisible(dataGridView2))
-                    {
-                        try
-                        {
-                            //dataGridView2.Rows[0].Selected = true;
-                            //Uri url = new Uri(dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString());
-                            //toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
-                            //  toolStripStatusLabel1.Text = "Total de archivos: " + _dataTable.DefaultView.Count;
-                            toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + Path.GetFileName((dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString()));
-                        }
-                        catch { }
-                    }
+                    //if (IsControlVisible(dataGridView2))
+                    //{
+                    //    try
+                    //    {
+                    //        toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + Path.GetFileName((dataGridView2.SelectedRows[0].Cells["Url"].Value.ToString()));
+                    //    }
+                    //    catch { }
+                    //}
                 }
                 else
                 {
@@ -751,8 +738,7 @@ namespace kakarot
             }
             catch (Exception ex)
             {
-                // MessageBox.Show("Ocurrio un error al aplicar el filtro", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                //textBox1.Text = ""; 
+                // Manejo de errores
             }
         }
         public bool IsControlVisible(Control control)
@@ -916,11 +902,13 @@ namespace kakarot
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
                 filehunterToolStripMenuItem.Checked = false;
+                toolStripComboBox3.SelectedIndex = 0;
                 Uri url = new Uri(dataGridView2.CurrentRow.Cells["Url"].Value.ToString());
                 toolStripStatusLabel1.Text = "Total de archivos: " + dataGridView2.RowCount.ToString() + " --> " + WebUtility.UrlDecode(url.Segments.Last().TrimEnd('/'));
             }
             else
             {
+                
                 dataGridView2.SendToBack();
                 dataGridView2.Visible = false;
                 dataGridView1.Visible = true;
@@ -929,7 +917,6 @@ namespace kakarot
         }
         private void buscarToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
         {
-
             if (buscarToolStripMenuItem1.Checked)
             {
                 SetupTextBoxFilter();
@@ -1498,7 +1485,8 @@ namespace kakarot
         }
         private void toolStripComboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (toolStripComboBox3.SelectedItem.ToString() != kakarot.Strings.FiltroRapido) ApplyFilter(toolStripComboBox3.SelectedItem.ToString(), dataGridView1, _dataTableDV1);
+            //if (toolStripComboBox3.SelectedItem.ToString() != kakarot.Strings.FiltroRapido) 
+                ApplyFilter(toolStripComboBox3.SelectedItem.ToString(), dataGridView1, _dataTableDV1);
         }
         private void fjntr_FormClosing(object sender, FormClosingEventArgs e)
         {

@@ -142,7 +142,7 @@ namespace kakarot {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Filtro rápido.
+        ///   Busca una cadena traducida similar a Sin filtro.
         /// </summary>
         internal static string FiltroRapido {
             get {

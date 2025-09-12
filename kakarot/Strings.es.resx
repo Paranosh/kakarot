@@ -145,7 +145,7 @@
     <value>Establecer ruta para OpenMSX</value>
   </data>
   <data name="FiltroRapido" xml:space="preserve">
-    <value>Filtro rápido</value>
+    <value>Sin filtro</value>
   </data>
   <data name="Herramientas" xml:space="preserve">
     <value>Herramientas</value>
